@@ -2,23 +2,11 @@
 
 MyGame::MyGame() : Game(L"MyGame", 800, 800)
 {
-
+	Components.push_back(new QuadComponent(this));
 }
 
 MyGame::~MyGame()
 {
-	for (auto c : Components)
-	{
-		delete c;
-	}
-}
-
-void MyGame::DestroyResources()
-{
-	for (auto c : Components)
-	{
-		c->DestroyResources();
-	}
 }
 
 void MyGame::Draw()
@@ -30,35 +18,4 @@ void MyGame::Draw()
 	{
 		c->Draw();
 	}
-}
-
-void MyGame::EndFrame()
-{
-}
-
-void MyGame::Initialize()
-{
-	Components.push_back(new TriangleComponent(this));
-	Components.push_back(new TriangleComponent(this));
-
-	for (auto c : Components)
-	{
-		c->Initialize();
-	}
-}
-
-void MyGame::PrepareFrame()
-{
-}
-
-void MyGame::PrepareResources()
-{
-}
-
-void MyGame::Update()
-{
-}
-
-void MyGame::UpdateInternal()
-{
 }

@@ -6,9 +6,9 @@ using namespace DirectX;
 QuadComponent::QuadComponent(Game* g) : GameComponent(g), offset()
 {
 	SimpleMath::Vector4 pointsTmp[8] = {
-	DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),	DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
-	DirectX::XMFLOAT4(-0.5f, -0.5f, 0.5f, 1.0f),	DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f),
-	DirectX::XMFLOAT4(0.5f, -0.5f, 0.5f, 1.0f),	DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f),
+	SimpleMath::Vector4(0.5f, 0.5f, 0.5f, 1.0f),	SimpleMath::Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+	SimpleMath::Vector4(-0.5f, -0.5f, 0.5f, 1.0f),	SimpleMath::Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+	SimpleMath::Vector4(0.5f, -0.5f, 0.5f, 1.0f),	SimpleMath::Vector4(1.0f, 1.0f, 1.0f, 1.0f),
 	SimpleMath::Vector4(-0.5f, 0.5f, 0.5f, 1.0f),	SimpleMath::Vector4(1.0f, 1.0f, 1.0f, 1.0f),
 	};
 	std::swap(points, pointsTmp);
@@ -58,7 +58,7 @@ void QuadComponent::Draw()
 void QuadComponent::Initialize()
 {
 	ID3DBlob* errorVertexCode = nullptr;
-	auto res = D3DCompileFromFile(L"./Shaders/MyVeryFirstShader.hlsl",
+	auto res = D3DCompileFromFile(L"./Shaders/QuadShader.hlsl",
 		nullptr /*macros*/,
 		nullptr /*include*/,
 		"VSMain",
@@ -78,17 +78,15 @@ void QuadComponent::Initialize()
 		// If there was  nothing in the error message then it simply could not find the shader file itself.
 		else
 		{
-			MessageBox(game->Display->hWnd, L"MyVeryFirstShader.hlsl", L"Missing Shader File", MB_OK);
+			MessageBox(game->Display->hWnd, L"QuadShader.hlsl", L"Missing Shader File", MB_OK);
 		}
 
 		return;
 	}
 
-	D3D_SHADER_MACRO Shader_Macros[] = { "TEST", "1", "TCOLOR", "float4(0.0f, 1.0f, 0.0f, 1.0f)", nullptr, nullptr };
-
 	ID3DBlob* errorPixelCode;
-	res = D3DCompileFromFile(L"./Shaders/MyVeryFirstShader.hlsl",
-		Shader_Macros /*macros*/,
+	res = D3DCompileFromFile(L"./Shaders/QuadShader.hlsl",
+		nullptr /*macros*/,
 		nullptr /*include*/,
 		"PSMain",
 		"ps_5_0",

@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <directxmath.h>
+#include "SimpleMath.h"
 
 class TriangleComponent : public GameComponent
 {
@@ -11,7 +12,7 @@ private:
 	ID3D11InputLayout* layout;
 	ID3D11PixelShader* pixelShader;
 	ID3DBlob* pixelShaderByteCode;
-	DirectX::XMFLOAT4 points[6];
+	DirectX::SimpleMath::Vector4 points[6];
 	ID3D11RasterizerState* rastState;
 	ID3D11VertexShader* vertexShader;
 	ID3DBlob* vertexShaderByteCode;

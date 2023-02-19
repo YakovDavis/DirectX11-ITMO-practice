@@ -36,6 +36,12 @@
     <ClCompile Include="MyGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\L2-Pong\QuadComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\L2-Pong\SimpleMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DisplayWin32.h">
@@ -56,5 +62,16 @@
     <ClInclude Include="MyGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\L2-Pong\QuadComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\L2-Pong\SimpleMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\L2-Pong\SimpleMath.inl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

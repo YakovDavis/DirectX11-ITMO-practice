@@ -1,4 +1,5 @@
 #pragma once
+#include <set>
 
 class Game;
 
@@ -6,16 +7,17 @@ class InputDevice
 {
 private:
 	Game* game;
-	int keys;
+	std::set<unsigned int> keys;
 protected:
 	void OnKeyDown();
 	void OnMouseMove();
 public:
-	int MouseMove;
-	int MouseOffset;
-	int MousePosition;
-	int MouseWheelID;
-	void AddPressedKey();
-	void IsKeyDown();
-	void RemovePressed();
+	InputDevice(Game* g);
+	~InputDevice();
+	int MousePosX;
+	int MousePosY;
+	void AddPressedKey(unsigned int key);
+	bool IsKeyDown(unsigned int key);
+	void RemovePressed(unsigned int key);
+	void OnRawDelta(int x, int y);
 };

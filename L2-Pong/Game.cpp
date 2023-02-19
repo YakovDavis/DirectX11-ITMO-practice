@@ -56,6 +56,10 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameC
 
 Game::~Game()
 {
+	for (auto c : Components)
+	{
+		delete c;
+	}
 	delete Display;
 	delete InputDev;
 	Context->Release();

@@ -1,13 +1,14 @@
 #pragma once
 #include "Game.h"
-#include "QuadComponent.h"
+#include "RacketComponent.h"
 
 class PongGame : public Game
 {
 protected:
 	void Update() override;
 	DirectX::SimpleMath::Vector2 pos;
-	QuadComponent* r1;
+	RacketComponent* r1;
+	RacketComponent* r2;
 public:
 	PongGame();
 	~PongGame();

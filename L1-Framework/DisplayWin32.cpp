@@ -1,16 +1,22 @@
 #include "DisplayWin32.h"
 #include "Game.h"
 
-LRESULT CALLBACK WndProc1(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {
 	switch (umessage)
 	{
 	case WM_KEYDOWN:
 	{
-		// If a key is pressed send it to the input object so it can record that state.
-		std::cout << "Key: " << static_cast<unsigned int>(wparam) << std::endl;
-
-		if (static_cast<unsigned int>(wparam) == 27) PostQuitMessage(0);
+		if (wparam == 27)
+			PostQuitMessage(0);
+		return 0;
+	}
+	case WM_KEYUP:
+	{
+		return 0;
+	}
+	case WM_INPUT:
+	{
 		return 0;
 	}
 	default:
@@ -20,12 +26,13 @@ LRESULT CALLBACK WndProc1(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam
 	}
 }
 
-DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight)
+DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight, Game* g)
 {
 	hInstance = hInst;
+	game = g;
 
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-	wc.lpfnWndProc = WndProc1;
+	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance;
@@ -63,4 +70,16 @@ DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenW
 	SetFocus(hWnd);
 
 	ShowCursor(true);
+
+	RAWINPUTDEVICE Rid[1];
+
+	Rid[0].usUsagePage = 0x01;          // HID_USAGE_PAGE_GENERIC
+	Rid[0].usUsage = 0x02;              // HID_USAGE_GENERIC_MOUSE
+	Rid[0].dwFlags = 0;
+	Rid[0].hwndTarget = 0;
+
+	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE)
+	{
+		// Registration failed. Call GetLastError for the cause of the error
+	}
 }

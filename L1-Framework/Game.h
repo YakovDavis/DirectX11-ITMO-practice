@@ -14,16 +14,17 @@
 class Game
 {
 private:
+	bool isExitRequested;
 	void CreateBackBuffer();
 protected:
-	virtual void DestroyResources() = 0;
-	virtual void Draw() = 0;
-	virtual void EndFrame() = 0;
-	virtual void Initialize() = 0;
-	virtual void PrepareFrame() = 0;
-	virtual void PrepareResources() = 0;
-	virtual void Update() = 0;
-	virtual void UpdateInternal() = 0;
+	virtual void DestroyResources();
+	virtual void Draw();
+	virtual void EndFrame();
+	virtual void Initialize();
+	virtual void PrepareFrame();
+	virtual void PrepareResources();
+	virtual void Update();
+	virtual void UpdateInternal();
 public:
 	ID3D11Texture2D* backBuffer;
 	ID3D11DeviceContext* Context;
@@ -38,14 +39,15 @@ public:
 	float StartTime;
 	IDXGISwapChain* SwapChain;
 	float TotalTime;
+	float DeltaTime;
 	std::vector<GameComponent*> Components;
 	DisplayWin32* Display;
-	InputDevice* InputDevice;
+	InputDevice* InputDev;
 	unsigned int FrameCount;
 	Game(LPCWSTR name, int screenWidth, int screenHeight);
 	virtual ~Game();
 	void Exit();
-	void MessageHandler(MSG& msg);
+	void MessageHandler();
 	void RestoreTargets();
 	void Run();
 };

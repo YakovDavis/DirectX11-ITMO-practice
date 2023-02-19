@@ -134,6 +134,7 @@
     <ClCompile Include="MySuper3DApp.cpp" />
     <ClCompile Include="PongGame.cpp" />
     <ClCompile Include="QuadComponent.cpp" />
+    <ClCompile Include="RacketComponent.cpp" />
     <ClCompile Include="SimpleMath.cpp" />
     <ClCompile Include="TriangleComponent.cpp" />
   </ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="InputDevice.h" />
     <ClInclude Include="PongGame.h" />
     <ClInclude Include="QuadComponent.h" />
+    <ClInclude Include="RacketComponent.h" />
     <ClInclude Include="SimpleMath.h" />
     <ClInclude Include="TriangleComponent.h" />
   </ItemGroup>
