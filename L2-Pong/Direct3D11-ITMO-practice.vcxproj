@@ -131,8 +131,10 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameComponent.cpp" />
     <ClCompile Include="InputDevice.cpp" />
-    <ClCompile Include="MyGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
+    <ClCompile Include="PongGame.cpp" />
+    <ClCompile Include="QuadComponent.cpp" />
+    <ClCompile Include="SimpleMath.cpp" />
     <ClCompile Include="TriangleComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -140,8 +142,13 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameComponent.h" />
     <ClInclude Include="InputDevice.h" />
-    <ClInclude Include="MyGame.h" />
+    <ClInclude Include="PongGame.h" />
+    <ClInclude Include="QuadComponent.h" />
+    <ClInclude Include="SimpleMath.h" />
     <ClInclude Include="TriangleComponent.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimpleMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

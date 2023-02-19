@@ -1,7 +1,7 @@
 // MySuper3DApp.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include "MyGame.h"
+#include "PongGame.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -10,7 +10,7 @@
 
 int main()
 {
-	MyGame game;
+	PongGame game;
 	game.Run();
 }
 

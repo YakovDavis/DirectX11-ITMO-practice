@@ -10,7 +10,8 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameC
 {
 	Instance = GetModuleHandle(nullptr);
 
-	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight);
+	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight, this);
+	InputDev = new InputDevice(this);
 
 	D3D_FEATURE_LEVEL featureLevel[] = { D3D_FEATURE_LEVEL_11_1 };
 
@@ -56,7 +57,7 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameC
 Game::~Game()
 {
 	delete Display;
-	delete InputDevice;
+	delete InputDev;
 	Context->Release();
 	backBuffer->Release();
 	RenderView->Release();
@@ -68,11 +69,59 @@ void Game::Exit()
 	DestroyResources();
 }
 
-void Game::MessageHandler(MSG& msg)
+void Game::MessageHandler()
 {
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+	MSG msg = {};
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
+	}
+
+	if (msg.message == WM_KEYDOWN)
+	{
+		if (msg.wParam == 27)
+		{
+			isExitRequested = true;
+			return;
+		}
+		InputDev->AddPressedKey(msg.wParam);
+		return;
+	}
+
+	if (msg.message == WM_KEYUP)
+	{
+		InputDev->RemovePressed(msg.wParam);
+		return;
+	}
+
+	if (msg.message == WM_INPUT)
+	{
+		UINT dwSize;
+
+		GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+		LPBYTE lpb = new BYTE[dwSize];
+		if (lpb == NULL)
+		{
+			return;
+		}
+
+		if (GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+			OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+
+		RAWINPUT* raw = (RAWINPUT*)lpb;
+
+		if (raw->header.dwType == RIM_TYPEKEYBOARD)
+		{
+			InputDev->AddPressedKey(raw->data.keyboard.MakeCode);
+			std::cout << raw->data.keyboard.MakeCode << "\n";
+		}
+		else if (raw->header.dwType == RIM_TYPEMOUSE)
+		{
+			InputDev->OnRawDelta(raw->data.mouse.lLastX, InputDev->MousePosY = raw->data.mouse.lLastY);
+		}
+		delete[] lpb;
+		return;
 	}
 }
 
@@ -83,23 +132,17 @@ void Game::RestoreTargets()
 void Game::Run()
 {
 	Initialize();
-	MSG msg = {};
-	bool isExitRequested = false;
+	isExitRequested = false;
 	PrevTime = std::chrono::steady_clock::now();
-	while (!isExitRequested) {
-		// Handle the windows messages.
-		MessageHandler(msg);
-
-		// If windows signals to end the application then exit out.
-		if (msg.message == WM_QUIT) {
-			isExitRequested = true;
-		}
+	while (!isExitRequested)
+	{
+		MessageHandler();
 
 		auto	curTime = std::chrono::steady_clock::now();
-		float	deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(curTime - PrevTime).count() / 1000000.0f;
+		DeltaTime = std::chrono::duration_cast<std::chrono::microseconds>(curTime - PrevTime).count() / 1000000.0f;
 		PrevTime = curTime;
 
-		TotalTime += deltaTime;
+		TotalTime += DeltaTime;
 		FrameCount++;
 
 		if (TotalTime > 1.0f) {
@@ -118,6 +161,8 @@ void Game::Run()
 
 		Context->OMSetRenderTargets(1, &RenderView, nullptr);
 
+		Update();
+
 		Draw();
 
 		Context->OMSetRenderTargets(0, nullptr, nullptr);
@@ -125,4 +170,55 @@ void Game::Run()
 		SwapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
 	}
 	Exit();
+}
+
+void Game::DestroyResources()
+{
+	for (auto c : Components)
+	{
+		c->DestroyResources();
+	}
+}
+
+void Game::Draw()
+{
+	float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	Context->ClearRenderTargetView(RenderView, color);
+
+	for (auto c : Components)
+	{
+		c->Draw();
+	}
+}
+
+void Game::EndFrame()
+{
+}
+
+void Game::Initialize()
+{
+	for (auto c : Components)
+	{
+		c->Initialize();
+	}
+}
+
+void Game::PrepareFrame()
+{
+}
+
+void Game::PrepareResources()
+{
+}
+
+void Game::Update()
+{
+	for (auto c : Components)
+	{
+		c->Update();
+	}
+}
+
+void Game::UpdateInternal()
+{
 }
