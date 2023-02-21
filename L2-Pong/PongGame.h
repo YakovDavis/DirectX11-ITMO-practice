@@ -24,6 +24,7 @@ protected:
 	ID2D1RenderTarget* D2DRenderTarget;
 	ID2D1SolidColorBrush* D2Dbrush;
 	ID2D1StrokeStyle* D2DLineStrokeStyle;
+	IDXGISurface* D2DBackBuff;
 public:
 	std::chrono::steady_clock::time_point ContinueTime;
 	RacketComponent* racket1;
@@ -34,5 +35,6 @@ public:
 	~PongGame();
 	void Draw() override;
 	void Initialize() override;
+	void DestroyResources() override;
 	void IncScore(bool p);
 };

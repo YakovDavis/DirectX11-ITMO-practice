@@ -3,6 +3,8 @@
 
 void PongGame::Update()
 {
+    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Escape))
+        isExitRequested = true;
     if (state == PONG_STATE_COOLDOWN && std::chrono::steady_clock::now() >= ContinueTime)
         state = PONG_STATE_NORMAL;
 	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::W) && racket1->GetY() < 0.8f)
@@ -109,9 +111,7 @@ void PongGame::Initialize()
         DWTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
     }
 
-    IDXGISurface* pBackBuff;
-
-    hr = SwapChain->GetBuffer(0, __uuidof(IDXGISurface), (void**)&pBackBuff);
+    hr = SwapChain->GetBuffer(0, __uuidof(IDXGISurface), (void**)&D2DBackBuff);
 
     // Create the DXGI Surface Render Target.
     float dpi = GetDpiForWindow(Display->hWnd);
@@ -126,7 +126,7 @@ void PongGame::Initialize()
     // Create a Direct2D render target that can draw into the surface in the swap chain
 
     hr = D2DFactory->CreateDxgiSurfaceRenderTarget(
-        pBackBuff,
+        D2DBackBuff,
         &props,
         &D2DRenderTarget);
 
@@ -148,6 +148,18 @@ void PongGame::Initialize()
         0,
         &D2DLineStrokeStyle
     );
+}
+
+void PongGame::DestroyResources()
+{
+    D2DBackBuff->Release();
+    D2DFactory->Release();
+    DWFactory->Release();
+    DWTextFormat->Release();
+    D2DRenderTarget->Release();
+    D2Dbrush->Release();
+    D2DLineStrokeStyle->Release();
+    Game::DestroyResources();
 }
 
 void PongGame::IncScore(bool p)

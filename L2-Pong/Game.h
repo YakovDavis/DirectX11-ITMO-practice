@@ -14,9 +14,9 @@
 class Game
 {
 private:
-	bool isExitRequested;
 	void CreateBackBuffer();
 protected:
+	bool isExitRequested;
 	virtual void DestroyResources();
 	virtual void Draw();
 	virtual void EndFrame();
