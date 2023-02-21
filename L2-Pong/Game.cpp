@@ -36,7 +36,7 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameC
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		D3D11_CREATE_DEVICE_DEBUG,
+		D3D11_CREATE_DEVICE_DEBUG|D3D11_CREATE_DEVICE_BGRA_SUPPORT,
 		featureLevel,
 		1,
 		D3D11_SDK_VERSION,
@@ -80,52 +80,6 @@ void Game::MessageHandler()
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-	}
-
-	if (msg.message == WM_KEYDOWN)
-	{
-		if (msg.wParam == 27)
-		{
-			isExitRequested = true;
-			return;
-		}
-		InputDev->AddPressedKey(msg.wParam);
-		return;
-	}
-
-	if (msg.message == WM_KEYUP)
-	{
-		InputDev->RemovePressed(msg.wParam);
-		return;
-	}
-
-	if (msg.message == WM_INPUT)
-	{
-		UINT dwSize;
-
-		GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
-		LPBYTE lpb = new BYTE[dwSize];
-		if (lpb == NULL)
-		{
-			return;
-		}
-
-		if (GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
-			OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
-
-		RAWINPUT* raw = (RAWINPUT*)lpb;
-
-		if (raw->header.dwType == RIM_TYPEKEYBOARD)
-		{
-			InputDev->AddPressedKey(raw->data.keyboard.MakeCode);
-			std::cout << raw->data.keyboard.MakeCode << "\n";
-		}
-		else if (raw->header.dwType == RIM_TYPEMOUSE)
-		{
-			InputDev->OnRawDelta(raw->data.mouse.lLastX, InputDev->MousePosY = raw->data.mouse.lLastY);
-		}
-		delete[] lpb;
-		return;
 	}
 }
 

@@ -1,16 +1,11 @@
 #include "InputDevice.h"
 #include "Game.h"
 
-void InputDevice::OnKeyDown()
-{
-}
+using namespace DirectX;
 
-void InputDevice::OnMouseMove()
+InputDevice::InputDevice(Game* g) : game(g)
 {
-}
-
-InputDevice::InputDevice(Game* g) : game(g), keys()
-{
+    keyboard = std::make_unique<Keyboard>();
     MousePosX = 0;
     MousePosY = 0;
 }
@@ -19,19 +14,16 @@ InputDevice::~InputDevice()
 {
 }
 
-void InputDevice::AddPressedKey(unsigned int key)
+bool InputDevice::IsKeyDown(Keyboard::Keys key)
 {
-    keys.insert(key);
+    auto kb = keyboard->GetState();
+    return kb.IsKeyDown(key);
 }
 
-bool InputDevice::IsKeyDown(unsigned int key)
+bool InputDevice::IsKeyUp(Keyboard::Keys key)
 {
-    return keys.find(key) != keys.end();
-}
-
-void InputDevice::RemovePressed(unsigned int key)
-{
-    keys.erase(key);
+    auto kb = keyboard->GetState();
+    return kb.IsKeyUp(key);
 }
 
 void InputDevice::OnRawDelta(int x, int y)

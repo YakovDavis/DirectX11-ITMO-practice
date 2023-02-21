@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <WinUser.h>
 #include <iostream>
+#include "Keyboard.h"
 
 class Game;
 
