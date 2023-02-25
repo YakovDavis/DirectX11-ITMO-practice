@@ -2,14 +2,13 @@
 #include "QuadComponent.h"
 #include "SimpleMath.h"
 
-class RacketComponent :
+class RacketComponent final :
     public QuadComponent
 {
 public:
     DirectX::SimpleMath::Rectangle CollisionBox;
     float Speed;
-    RacketComponent(Game* g);
-    ~RacketComponent();
+    explicit RacketComponent(Game* g);
     void Update() override;
 };
 

@@ -5,6 +5,8 @@
 #include <d2d1.h>
 #include <dwrite.h>
 
+#define RIGHT_BOT
+
 enum GameState
 {
 	PONG_STATE_NORMAL,
@@ -32,7 +34,6 @@ public:
 	BallComponent* ball;
 	GameState state;
 	PongGame();
-	~PongGame();
 	void Draw() override;
 	void Initialize() override;
 	void DestroyResources() override;

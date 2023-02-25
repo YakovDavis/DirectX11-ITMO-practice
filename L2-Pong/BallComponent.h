@@ -13,9 +13,7 @@ private:
 public:
     float Speed;
     DirectX::SimpleMath::Vector2 Direction;
-    DirectX::SimpleMath::Rectangle CollisionBox;
     BallComponent(Game* g);
-    ~BallComponent();
     void Update() override;
 };
 

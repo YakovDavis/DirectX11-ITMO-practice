@@ -2,11 +2,11 @@
 
 void Game::CreateBackBuffer()
 {
-	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);	// __uuidof(ID3D11Texture2D)
+	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
 	res = Device->CreateRenderTargetView(backBuffer, nullptr, &RenderView);
 }
 
-Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameCount(0), Components()
+Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameCount(0)
 {
 	Instance = GetModuleHandle(nullptr);
 
@@ -103,7 +103,8 @@ void Game::Run()
 		TotalTime += DeltaTime;
 		FrameCount++;
 
-		if (TotalTime > 1.0f) {
+		if (TotalTime > 1.0f)
+		{
 			float fps = FrameCount / TotalTime;
 
 			TotalTime -= 1.0f;

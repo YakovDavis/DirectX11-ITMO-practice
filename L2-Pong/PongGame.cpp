@@ -1,8 +1,14 @@
 #include "PongGame.h"
 #include <string>
 
+static float DifficultyCurve(std::chrono::steady_clock::time_point continueTime)
+{
+    return 5.0f / (1.0f + exp(- std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - continueTime).count() / 8.0f + 4.0f)) + 1.0f;
+}
+
 void PongGame::Update()
 {
+    ball->Speed = DifficultyCurve(ContinueTime);
     if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Escape))
         isExitRequested = true;
     if (state == PONG_STATE_COOLDOWN && std::chrono::steady_clock::now() >= ContinueTime)
@@ -11,16 +17,28 @@ void PongGame::Update()
 		racket1->SetY(racket1->GetY() + DeltaTime * racket1->Speed);
 	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::S) && racket1->GetY() > -0.8f)
 		racket1->SetY(racket1->GetY() - DeltaTime * racket1->Speed);
-	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Up) && racket2->GetY() < 0.8f)
-		racket2->SetY(racket2->GetY() + DeltaTime * racket2->Speed);
-	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Down) && racket2->GetY() > -0.8f)
-		racket2->SetY(racket2->GetY() - DeltaTime * racket2->Speed);
+
+#ifdef RIGHT_BOT
+    if (abs(racket2->GetY() - ball->GetY()) > 0.1f)
+    {
+        if (racket2->GetY() < ball->GetY() && racket2->GetY() < 0.8f)
+            racket2->SetY(racket2->GetY() + DeltaTime * racket2->Speed);
+        if (racket2->GetY() > ball->GetY() && racket2->GetY() > -0.8f)
+            racket2->SetY(racket2->GetY() - DeltaTime * racket2->Speed);
+    }
+#else
+    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Up) && racket2->GetY() < 0.8f)
+        racket2->SetY(racket2->GetY() + DeltaTime * racket2->Speed);
+    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Down) && racket2->GetY() > -0.8f)
+        racket2->SetY(racket2->GetY() - DeltaTime * racket2->Speed);
+#endif
+    
     Game::Update();
 }
 
 PongGame::PongGame() : Game(L"MyGame", 800, 800)
 {
-	srand((unsigned)time(NULL));
+	srand(static_cast<unsigned>(time(nullptr)));
 	racket1 = new RacketComponent(this);
 	racket1->SetX(-0.9f);
 	racket2 = new RacketComponent(this);
@@ -31,10 +49,6 @@ PongGame::PongGame() : Game(L"MyGame", 800, 800)
 	Components.push_back(ball);
     state = PONG_STATE_COOLDOWN;
     ContinueTime = std::chrono::steady_clock::now() + std::chrono::seconds(1);
-}
-
-PongGame::~PongGame()
-{
 }
 
 void PongGame::Draw()
