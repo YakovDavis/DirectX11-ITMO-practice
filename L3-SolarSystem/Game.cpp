@@ -1,5 +1,74 @@
 #include "Game.h"
 
+Game* Game::activeGame;
+
+LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
+{
+	switch (umessage)
+	{
+	case WM_KEYDOWN:
+		{
+			if (static_cast<unsigned int>(wparam) == 27) PostQuitMessage(0);
+			return 0;
+		}
+	case WM_INPUT:
+		{
+			UINT dwSize = 0;
+			GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
+			LPBYTE lpb = new BYTE[dwSize];
+			if (lpb == nullptr) {
+				return 0;
+			}
+			
+			if (GetRawInputData((HRAWINPUT)lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+
+			auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
+
+			if (Game::activeGame != nullptr)
+			{
+				if (raw->header.dwType == RIM_TYPEKEYBOARD)
+				{
+					//printf(" Kbd: make=%04i Flags:%04i Reserved:%04i ExtraInformation:%08i, msg=%04i VK=%i \n",
+					//	raw->data.keyboard.MakeCode,
+					//	raw->data.keyboard.Flags,
+					//	raw->data.keyboard.Reserved,
+					//	raw->data.keyboard.ExtraInformation,
+					//	raw->data.keyboard.Message,
+					//	raw->data.keyboard.VKey);
+
+					Game::activeGame->InputDev->OnKeyDown({
+						raw->data.keyboard.MakeCode,
+						raw->data.keyboard.Flags,
+						raw->data.keyboard.VKey,
+						raw->data.keyboard.Message
+					});
+				}
+				else if (raw->header.dwType == RIM_TYPEMOUSE)
+				{
+					//printf(" Mouse: X=%04d Y:%04d \n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+					Game::activeGame->InputDev->OnMouseMove({
+						raw->data.mouse.usFlags,
+						raw->data.mouse.usButtonFlags,
+						static_cast<int>(raw->data.mouse.ulExtraInformation),
+						static_cast<int>(raw->data.mouse.ulRawButtons),
+						static_cast<short>(raw->data.mouse.usButtonData),
+						raw->data.mouse.lLastX,
+						raw->data.mouse.lLastY
+					});
+				}
+			}
+			
+			delete[] lpb;
+			return DefWindowProc(hwnd, umessage, wparam, lparam);
+		}
+	default:
+		{
+			return DefWindowProc(hwnd, umessage, wparam, lparam);
+		}
+	}
+}
+
 void Game::CreateBackBuffer()
 {
 	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
@@ -8,6 +77,8 @@ void Game::CreateBackBuffer()
 
 Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameCount(0)
 {
+	activeGame = this;
+	
 	Instance = GetModuleHandle(nullptr);
 
 	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight, this);
@@ -81,6 +152,9 @@ void Game::MessageHandler()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	if (msg.message == WM_QUIT)
+		isExitRequested = true;
 }
 
 void Game::RestoreTargets()

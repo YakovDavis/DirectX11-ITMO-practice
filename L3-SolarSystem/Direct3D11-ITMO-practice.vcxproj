@@ -134,7 +134,6 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameComponent.cpp" />
     <ClCompile Include="InputDevice.cpp" />
-    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="PongGame.cpp" />
@@ -151,7 +150,6 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameComponent.h" />
     <ClInclude Include="InputDevice.h" />
-    <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Keys.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlatformHelpers.h" />

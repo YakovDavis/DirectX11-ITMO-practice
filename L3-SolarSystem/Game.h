@@ -16,6 +16,7 @@ class Game
 private:
 	void CreateBackBuffer();
 protected:
+	static Game* activeGame;
 	bool isExitRequested;
 	virtual void DestroyResources();
 	virtual void Draw();
@@ -26,6 +27,7 @@ protected:
 	virtual void Update();
 	virtual void UpdateInternal();
 public:
+	static LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam);
 	ID3D11Texture2D* backBuffer;
 	ID3D11DeviceContext* Context;
 	int DebugAnnotation;

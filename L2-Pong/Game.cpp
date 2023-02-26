@@ -39,7 +39,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 			if (GetRawInputData((HRAWINPUT)lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
 				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
 
-			RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(lpb);
+			auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
 
 			if (pThis)
 			{

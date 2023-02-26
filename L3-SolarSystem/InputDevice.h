@@ -7,7 +7,7 @@
 
 class Game;
 
-class GAMEFRAMEWORK_API InputDevice
+class InputDevice
 {
 	friend class Game;
 	
