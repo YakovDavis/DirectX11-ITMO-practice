@@ -47,7 +47,6 @@ static bool LineRectColl(const SimpleMath::Vector2& p1, const SimpleMath::Vector
 void BallComponent::GenRndDirection()
 {
 	SimpleMath::Vector2::Lerp(SimpleMath::Vector2(1.0f, 1.0f), SimpleMath::Vector2(1.0f, -1.0f), (float)rand() / RAND_MAX, Direction);
-	//Direction = SimpleMath::Vector2(1.0f, 0.0f);
 	if ((float)rand() / RAND_MAX < 0.5f)
 		Direction.x *= -1;
 	Direction.Normalize();
@@ -81,7 +80,6 @@ void BallComponent::Update()
 			pGame->state = PONG_STATE_COOLDOWN;
 			pGame->ContinueTime = std::chrono::steady_clock::now() + std::chrono::seconds(1);
 			pGame->IncScore(nextPos.x > 0.0f);
-			pGame->ballHits = 0;
 			nextPos.x = 0.0f;
 			nextPos.y = 0.0f;
 			GenRndDirection();
@@ -91,14 +89,12 @@ void BallComponent::Update()
 			SimpleMath::Vector2::Lerp(SimpleMath::Vector2(1.f, -1.f), SimpleMath::Vector2(1.f, 1.f), abs(GetY() - pGame->racket1->GetY() + 0.1f) / 0.2f, Direction);
 			Direction.Normalize();
 			nextPos += Direction * Speed * game->DeltaTime;
-			pGame->ballHits += 1;
 		}
 		else if (LineRectColl(GetPosition() * 800, nextPos * 800, pGame->racket2->CollisionBox, true, nextPos))
 		{
 			SimpleMath::Vector2::Lerp(SimpleMath::Vector2(-1.f, -1.f), SimpleMath::Vector2(-1.f, 1.f), abs(GetY() - pGame->racket2->GetY() + 0.1f) / 0.2f, Direction);
 			Direction.Normalize();
 			nextPos += Direction * Speed * game->DeltaTime;
-			pGame->ballHits += 1;
 		}
 		SetPosition(nextPos);
 	}

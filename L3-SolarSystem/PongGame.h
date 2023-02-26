@@ -29,7 +29,6 @@ protected:
 	IDXGISurface* D2DBackBuff;
 public:
 	std::chrono::steady_clock::time_point ContinueTime;
-	unsigned ballHits;
 	RacketComponent* racket1;
 	RacketComponent* racket2;
 	BallComponent* ball;

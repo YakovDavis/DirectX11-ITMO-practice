@@ -1,22 +1,21 @@
 #include "PongGame.h"
-#include "Keys.h"
 #include <string>
 
-static float DifficultyCurve(unsigned ballHits)
+static float DifficultyCurve(std::chrono::steady_clock::time_point continueTime)
 {
-    return 5.0f / (1.0f + exp(- static_cast<float>(ballHits) / 8.0f + 4.0f)) + 1.0f;
+    return 5.0f / (1.0f + exp(- std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - continueTime).count() / 8.0f + 4.0f)) + 1.0f;
 }
 
 void PongGame::Update()
 {
-    ball->Speed = DifficultyCurve(ballHits);
-    if (InputDev->IsKeyDown(Keys::Escape))
+    ball->Speed = DifficultyCurve(ContinueTime);
+    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Escape))
         isExitRequested = true;
     if (state == PONG_STATE_COOLDOWN && std::chrono::steady_clock::now() >= ContinueTime)
         state = PONG_STATE_NORMAL;
-	if (InputDev->IsKeyDown(Keys::W) && racket1->GetY() < 0.8f)
+	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::W) && racket1->GetY() < 0.8f)
 		racket1->SetY(racket1->GetY() + DeltaTime * racket1->Speed);
-	if (InputDev->IsKeyDown(Keys::S) && racket1->GetY() > -0.8f)
+	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::S) && racket1->GetY() > -0.8f)
 		racket1->SetY(racket1->GetY() - DeltaTime * racket1->Speed);
 
 #ifdef RIGHT_BOT
@@ -50,7 +49,6 @@ PongGame::PongGame() : Game(L"MyGame", 800, 800)
 	Components.push_back(ball);
     state = PONG_STATE_COOLDOWN;
     ContinueTime = std::chrono::steady_clock::now() + std::chrono::seconds(1);
-    ballHits = 0;
 }
 
 void PongGame::Draw()
@@ -110,7 +108,7 @@ void PongGame::Initialize()
         // Create a DirectWrite text format object.
         hr = DWFactory->CreateTextFormat(
             msc_fontName,
-            nullptr,
+            NULL,
             DWRITE_FONT_WEIGHT_NORMAL,
             DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL,
