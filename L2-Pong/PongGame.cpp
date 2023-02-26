@@ -1,4 +1,5 @@
 #include "PongGame.h"
+#include "Keys.h"
 #include <string>
 
 static float DifficultyCurve(std::chrono::steady_clock::time_point continueTime)
@@ -9,13 +10,13 @@ static float DifficultyCurve(std::chrono::steady_clock::time_point continueTime)
 void PongGame::Update()
 {
     ball->Speed = DifficultyCurve(ContinueTime);
-    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Escape))
+    if (InputDev->IsKeyDown(Keys::Escape))
         isExitRequested = true;
     if (state == PONG_STATE_COOLDOWN && std::chrono::steady_clock::now() >= ContinueTime)
         state = PONG_STATE_NORMAL;
-	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::W) && racket1->GetY() < 0.8f)
+	if (InputDev->IsKeyDown(Keys::W) && racket1->GetY() < 0.8f)
 		racket1->SetY(racket1->GetY() + DeltaTime * racket1->Speed);
-	if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::S) && racket1->GetY() > -0.8f)
+	if (InputDev->IsKeyDown(Keys::S) && racket1->GetY() > -0.8f)
 		racket1->SetY(racket1->GetY() - DeltaTime * racket1->Speed);
 
 #ifdef RIGHT_BOT

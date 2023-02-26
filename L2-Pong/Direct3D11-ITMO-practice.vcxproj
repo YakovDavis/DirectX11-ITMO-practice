@@ -128,11 +128,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BallComponent.cpp" />
+    <ClCompile Include="Delegates.cpp" />
     <ClCompile Include="DisplayWin32.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameComponent.cpp" />
     <ClCompile Include="InputDevice.cpp" />
-    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="PongGame.cpp" />
@@ -143,11 +143,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BallComponent.h" />
+    <ClInclude Include="Delegates.h" />
     <ClInclude Include="DisplayWin32.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameComponent.h" />
     <ClInclude Include="InputDevice.h" />
-    <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Keys.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlatformHelpers.h" />
     <ClInclude Include="PongGame.h" />
@@ -158,6 +159,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Delegates.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
