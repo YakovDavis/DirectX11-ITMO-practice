@@ -200,6 +200,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="GameComponents\SphereComponent.cpp" />
     <ClCompile Include="GameComponents\TriangleComponent.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -716,6 +717,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameComponents\QuadComponent.h" />
+    <ClInclude Include="GameComponents\SphereComponent.h" />
     <ClInclude Include="GameComponents\TriangleComponent.h" />
     <ClInclude Include="Davork\Delegates.h" />
     <ClInclude Include="Davork\DisplayWin32.h" />

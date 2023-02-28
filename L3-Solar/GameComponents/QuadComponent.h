@@ -26,7 +26,6 @@ protected:
 	DirectX::SimpleMath::Vector4 offset;
 public:
 	QuadComponent(Game* g);
-	virtual ~QuadComponent();
 	void DestroyResources() override;
 	void Draw() override;
 	void Initialize() override;

@@ -22,7 +22,7 @@ private:
 	UINT offsets[1];
 public:
 	TriangleComponent(Game* g);
-	~TriangleComponent();
+	~TriangleComponent() override;
 	void DestroyResources() override;
 	void Draw() override;
 	void Initialize() override;
