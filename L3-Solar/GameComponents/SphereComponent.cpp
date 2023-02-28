@@ -4,7 +4,7 @@
 using namespace DirectX;
 using namespace SimpleMath;
 
-SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount) : GameComponent(g), world(Matrix::Identity)
+SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount) : GameComponent(g)
 {
 	const Point topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f)} );
 	const Point bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f)} );
@@ -21,12 +21,12 @@ SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stac
         for(int j = 0; j <= sliceCount; ++j)
 		{
 			const float theta = static_cast<float>(j) * thetaStep;
-
 			Point p;
-			p.pos.x = radius*sinf(phi)*cosf(theta);
-			p.pos.y = radius*cosf(phi);
-			p.pos.z = radius*sinf(phi)*sinf(theta);
+			p.pos.x = radius * sinf(phi)*cosf(theta);
+			p.pos.y = radius * cosf(phi);
+			p.pos.z = radius * sinf(phi)*sinf(theta);
         	p.pos.w = 1.0f;
+        	p.col = Vector4(sinf(phi), 0.0f, sinf(theta), 1.0f);
 			points.push_back(p);
 		}
 	}
@@ -84,7 +84,7 @@ void SphereComponent::Initialize()
 	if (FAILED(res)) {
 		// If the shader failed to compile it should have written something to the error message.
 		if (errorVertexCode) {
-			char* compileErrors = (char*)(errorVertexCode->GetBufferPointer());
+			const char* compileErrors = static_cast<char*>(errorVertexCode->GetBufferPointer());
 
 			std::cout << compileErrors << std::endl;
 		}
@@ -118,7 +118,7 @@ void SphereComponent::Initialize()
 		pixelShaderByteCode->GetBufferSize(),
 		nullptr, &pixelShader);
 
-	D3D11_INPUT_ELEMENT_DESC inputElements[] = {
+	constexpr D3D11_INPUT_ELEMENT_DESC inputElements[] = {
 		D3D11_INPUT_ELEMENT_DESC {
 			"POSITION",
 			0,
@@ -150,7 +150,7 @@ void SphereComponent::Initialize()
 	vertexBufDesc.CPUAccessFlags = 0;
 	vertexBufDesc.MiscFlags = 0;
 	vertexBufDesc.StructureByteStride = 0;
-	vertexBufDesc.ByteWidth = sizeof(SimpleMath::Vector4) * std::size(points);
+	vertexBufDesc.ByteWidth = sizeof(Vector4) * std::size(points) * 2;
 
 	D3D11_SUBRESOURCE_DATA vertexData = {};
 	vertexData.pSysMem = points.data();
@@ -188,7 +188,7 @@ void SphereComponent::Initialize()
 	game->Device->CreateBuffer(&constBufDesc, nullptr, &constBuffer);
 
 	CD3D11_RASTERIZER_DESC rastDesc = {};
-	rastDesc.CullMode = D3D11_CULL_NONE;
+	rastDesc.CullMode = D3D11_CULL_BACK;
 	rastDesc.FillMode = D3D11_FILL_SOLID;
 
 	res = game->Device->CreateRasterizerState(&rastDesc, &rastState);
@@ -196,7 +196,10 @@ void SphereComponent::Initialize()
 
 void SphereComponent::Update()
 {
-	game->Context->UpdateSubresource(constBuffer, 0, 0, &world, 0, 0);
+	world = Matrix::CreateWorld(Vector3::Zero, Vector3(std::cos(XM_2PI * game->TotalTime), 0.0f, std::sin(XM_2PI * game->TotalTime)), Vector3::Up);
+	Matrix worldViewProj = world * game->Camera->GetMatrix();
+	worldViewProj = worldViewProj.Transpose();
+	game->Context->UpdateSubresource(constBuffer, 0, nullptr, &worldViewProj, 0, 0);
 }
 
 void SphereComponent::Reload()
