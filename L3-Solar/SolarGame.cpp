@@ -6,6 +6,6 @@
 SolarGame::SolarGame() : Game(L"Solar Game", 800, 800)
 {
 	//srand(static_cast<unsigned>(time(nullptr)));
-	sphere = new SphereComponent(this, 1.0f, 5, 5);
+	sphere = new SphereComponent(this, 1.0f, 16, 16);
     Components.push_back(sphere);
 }

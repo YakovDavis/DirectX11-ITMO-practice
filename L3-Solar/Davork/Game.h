@@ -7,6 +7,8 @@
 #include <d3dcompiler.h>
 #include <directxmath.h>
 #include <chrono>
+
+#include "Camera.h"
 #include "GameComponent.h"
 #include "DisplayWin32.h"
 #include "InputDevice.h"
@@ -50,6 +52,7 @@ public:
 	std::vector<GameComponent*> Components;
 	DisplayWin32* Display;
 	InputDevice* InputDev;
+	Camera* Camera;
 	unsigned int FrameCount;
 	Game(LPCWSTR name, int screenWidth, int screenHeight);
 	virtual ~Game();

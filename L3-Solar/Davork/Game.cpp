@@ -91,12 +91,15 @@ void Game::CreateBackBuffer()
 	res = Device->CreateRenderTargetView(backBuffer, nullptr, &RenderView);
 }
 
-Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameCount(0), isExitRequested(false)
+Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested(false), Name(name), FrameCount(0)
 {
 	Instance = GetModuleHandle(nullptr);
 
 	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight, this);
 	InputDev = new InputDevice(this);
+
+	Camera = new ::Camera();
+	Camera->AspectRatio = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
 }
 
 Game::~Game()
@@ -274,6 +277,7 @@ void Game::PrepareResources()
 
 void Game::Update()
 {
+	Camera->UpdateMatrix();
 	for (auto c : Components)
 	{
 		c->Update();
