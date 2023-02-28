@@ -27,12 +27,12 @@ void PongGame::Update()
         if (racket2->GetY() > ball->GetY() && racket2->GetY() > -0.8f)
             racket2->SetY(racket2->GetY() - DeltaTime * racket2->Speed);
     }
-#else
-    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Up) && racket2->GetY() < 0.8f)
+#else // ifdef RIGHT_BOT
+    if (InputDev->IsKeyDown(Keys::Up) && racket2->GetY() < 0.8f)
         racket2->SetY(racket2->GetY() + DeltaTime * racket2->Speed);
-    if (InputDev->IsKeyDown(DirectX::Keyboard::Keys::Down) && racket2->GetY() > -0.8f)
+    if (InputDev->IsKeyDown(Keys::Down) && racket2->GetY() > -0.8f)
         racket2->SetY(racket2->GetY() - DeltaTime * racket2->Speed);
-#endif
+#endif // else ifdef RIGHT_BOT
     
     Game::Update();
 }

@@ -36,7 +36,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 				return 0;
 			}
 			
-			if (GetRawInputData((HRAWINPUT)lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
 				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
 
 			auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
@@ -87,17 +87,150 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 
 void Game::CreateBackBuffer()
 {
-	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
 	res = Device->CreateRenderTargetView(backBuffer, nullptr, &RenderView);
 }
 
-Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameCount(0)
+Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameCount(0), isExitRequested(false)
 {
 	Instance = GetModuleHandle(nullptr);
 
 	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight, this);
 	InputDev = new InputDevice(this);
+}
 
+Game::~Game()
+{
+	for (auto c : Components)
+	{
+		delete c;
+	}
+	delete Display;
+	delete InputDev;
+}
+
+void Game::Exit()
+{
+	DestroyResources();
+}
+
+void Game::MessageHandler()
+{
+	MSG msg = {};
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	if (msg.message == WM_QUIT)
+		isExitRequested = true;
+}
+
+void Game::RestoreTargets()
+{
+}
+
+void Game::InitTimer()
+{
+	PrevTime = std::chrono::steady_clock::now();
+}
+
+void Game::UpdateTimer()
+{
+	auto	curTime = std::chrono::steady_clock::now();
+	DeltaTime = std::chrono::duration_cast<std::chrono::microseconds>(curTime - PrevTime).count() / 1000000.0f;
+	PrevTime = curTime;
+
+	TotalTime += DeltaTime;
+	FrameCount++;
+
+	if (TotalTime > 1.0f)
+	{
+		float fps = static_cast<float>(FrameCount) / TotalTime;
+
+		TotalTime -= 1.0f;
+
+		WCHAR text[256];
+		swprintf_s(text, TEXT("FPS: %f"), fps);
+		SetWindowText(Display->hWnd, text);
+
+		FrameCount = 0;
+	}
+}
+
+void Game::Run()
+{
+	PrepareResources();
+	Initialize();
+	InitTimer();
+	while (!isExitRequested)
+	{
+		MessageHandler();
+
+		UpdateTimer();
+
+		UpdateInternal();
+
+		Update();
+
+		PrepareFrame();
+		
+		Draw();
+
+		EndFrame();
+	}
+	Exit();
+}
+
+void Game::DestroyResources()
+{
+	for (auto c : Components)
+	{
+		c->DestroyResources();
+	}
+	
+	Context->Release();
+	backBuffer->Release();
+	RenderView->Release();
+	SwapChain->Release();
+}
+
+void Game::Draw()
+{
+	for (auto c : Components)
+	{
+		c->Draw();
+	}
+}
+
+void Game::EndFrame()
+{
+	Context->OMSetRenderTargets(0, nullptr, nullptr);
+
+	SwapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
+}
+
+void Game::Initialize()
+{
+	for (auto c : Components)
+	{
+		c->Initialize();
+	}
+}
+
+void Game::PrepareFrame()
+{
+	Context->ClearState();
+
+	Context->OMSetRenderTargets(1, &RenderView, nullptr);
+
+	constexpr float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	Context->ClearRenderTargetView(RenderView, color);
+}
+
+void Game::PrepareResources()
+{
 	D3D_FEATURE_LEVEL featureLevel[] = { D3D_FEATURE_LEVEL_11_1 };
 
 	DXGI_SWAP_CHAIN_DESC swapDesc = {};
@@ -137,125 +270,6 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : Name(name), FrameC
 	}
 
 	CreateBackBuffer();
-}
-
-Game::~Game()
-{
-	for (auto c : Components)
-	{
-		delete c;
-	}
-	delete Display;
-	delete InputDev;
-	Context->Release();
-	backBuffer->Release();
-	RenderView->Release();
-	SwapChain->Release();
-}
-
-void Game::Exit()
-{
-	DestroyResources();
-}
-
-void Game::MessageHandler()
-{
-	MSG msg = {};
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	if (msg.message == WM_QUIT)
-		isExitRequested = true;
-}
-
-void Game::RestoreTargets()
-{
-}
-
-void Game::Run()
-{
-	Initialize();
-	isExitRequested = false;
-	PrevTime = std::chrono::steady_clock::now();
-	while (!isExitRequested)
-	{
-		MessageHandler();
-
-		auto	curTime = std::chrono::steady_clock::now();
-		DeltaTime = std::chrono::duration_cast<std::chrono::microseconds>(curTime - PrevTime).count() / 1000000.0f;
-		PrevTime = curTime;
-
-		TotalTime += DeltaTime;
-		FrameCount++;
-
-		if (TotalTime > 1.0f)
-		{
-			float fps = FrameCount / TotalTime;
-
-			TotalTime -= 1.0f;
-
-			WCHAR text[256];
-			swprintf_s(text, TEXT("FPS: %f"), fps);
-			SetWindowText(Display->hWnd, text);
-
-			FrameCount = 0;
-		}
-
-		Context->ClearState();
-
-		Context->OMSetRenderTargets(1, &RenderView, nullptr);
-
-		Update();
-
-		Draw();
-
-		Context->OMSetRenderTargets(0, nullptr, nullptr);
-
-		SwapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
-	}
-	Exit();
-}
-
-void Game::DestroyResources()
-{
-	for (auto c : Components)
-	{
-		c->DestroyResources();
-	}
-}
-
-void Game::Draw()
-{
-	float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	Context->ClearRenderTargetView(RenderView, color);
-
-	for (auto c : Components)
-	{
-		c->Draw();
-	}
-}
-
-void Game::EndFrame()
-{
-}
-
-void Game::Initialize()
-{
-	for (auto c : Components)
-	{
-		c->Initialize();
-	}
-}
-
-void Game::PrepareFrame()
-{
-}
-
-void Game::PrepareResources()
-{
 }
 
 void Game::Update()

@@ -13,8 +13,9 @@
 
 class Game
 {
-private:
 	void CreateBackBuffer();
+	void InitTimer();
+	void UpdateTimer();
 protected:
 	bool isExitRequested;
 	virtual void DestroyResources();
