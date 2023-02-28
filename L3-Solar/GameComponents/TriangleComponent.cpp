@@ -1,5 +1,5 @@
 #include "TriangleComponent.h"
-#include "Game.h"
+#include "../Davork/Game.h"
 
 TriangleComponent::TriangleComponent(Game* g) : GameComponent(g)
 {

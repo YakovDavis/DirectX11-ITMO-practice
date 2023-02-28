@@ -1,5 +1,5 @@
 #include "QuadComponent.h"
-#include "Game.h"
+#include "../Davork/Game.h"
 
 using namespace DirectX;
 
