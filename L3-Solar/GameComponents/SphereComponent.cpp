@@ -4,15 +4,17 @@
 using namespace DirectX;
 using namespace SimpleMath;
 
-SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount) : GameComponent(g)
+SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount, Vector4 col1, Vector4 col2) : GameComponent(g)
 {
-	const Point topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f)} );
-	const Point bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f)} );
+	Point topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), col1} );
+	Vector4::Lerp(col1, col2, 0.5f, topPoint.col);
+	Point bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), col1} );
+	Vector4::Lerp(col1, col2, 0.5f, bottomPoint.col);
 
 	points.push_back(topPoint);
 
 	const float phiStep   = XM_PI / static_cast<float>(stackCount);
-	const float thetaStep = 2.0f * XM_PI / static_cast<float>(sliceCount);
+	const float thetaStep = XM_2PI / static_cast<float>(sliceCount);
 	
 	for(int i = 1; i <= stackCount-1; ++i)
 	{
@@ -26,7 +28,7 @@ SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stac
 			p.pos.y = radius * cosf(phi);
 			p.pos.z = radius * sinf(phi)*sinf(theta);
         	p.pos.w = 1.0f;
-        	p.col = Vector4(sinf(phi), 0.0f, sinf(theta), 1.0f);
+        	Vector4::Lerp(col1, col2, (sinf(2.0f * phi) * sinf(theta) + 1.0f) / 2.0f, p.col);
 			points.push_back(p);
 		}
 	}
@@ -196,7 +198,7 @@ void SphereComponent::Initialize()
 
 void SphereComponent::Update()
 {
-	world = Matrix::CreateWorld(Vector3::Zero, Vector3(std::cos(XM_2PI * game->TotalTime), 0.0f, std::sin(XM_2PI * game->TotalTime)), Vector3::Up);
+	world = Matrix::CreateWorld(Vector3::Zero, Vector3(1.0f, 0.0f, 0.0f), Vector3::Up);
 	Matrix worldViewProj = world * game->Camera->GetMatrix();
 	worldViewProj = worldViewProj.Transpose();
 	game->Context->UpdateSubresource(constBuffer, 0, nullptr, &worldViewProj, 0, 0);

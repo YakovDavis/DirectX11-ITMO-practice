@@ -32,7 +32,7 @@ protected:
     std::vector<int> indices;
     DirectX::SimpleMath::Matrix world;
 public:
-    SphereComponent(Game* game, float radius, int sliceCount, int stackCount);
+    SphereComponent(Game* game, float radius, int sliceCount, int stackCount, DirectX::SimpleMath::Vector4 col1, DirectX::SimpleMath::Vector4 col2);
     void DestroyResources() override;
     void Draw() override;
     void Initialize() override;
