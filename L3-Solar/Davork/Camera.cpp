@@ -8,7 +8,7 @@ Camera::Camera()
 {
     viewProj = Matrix::Identity;
     
-    FOV = 0.25f * XM_PI;
+    FOV = XM_PI / 4.0f;
     AspectRatio = 1.0f;
     NearPlane = 1.0f;
     FarPlane = 1000.f;

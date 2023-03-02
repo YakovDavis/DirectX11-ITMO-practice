@@ -198,7 +198,7 @@ void SphereComponent::Initialize()
 
 void SphereComponent::Update()
 {
-	world = Matrix::CreateWorld(Vector3::Zero, Vector3(1.0f, 0.0f, 0.0f), Vector3::Up);
+	world = Matrix::Identity; //Matrix::CreateWorld(Vector3::Zero, Vector3(1.0f, 0.0f, 0.0f), Vector3::Up);
 	Matrix worldViewProj = world * game->Camera->GetMatrix();
 	worldViewProj = worldViewProj.Transpose();
 	game->Context->UpdateSubresource(constBuffer, 0, nullptr, &worldViewProj, 0, 0);
