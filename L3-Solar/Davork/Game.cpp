@@ -85,6 +85,27 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 	}
 }
 
+void Game::CreateDepthStencilBuffer()
+{
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+	
+	depthStencilDesc.Width     = Display->ClientWidth;
+	depthStencilDesc.Height    = Display->ClientHeight;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count   = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage          = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags      = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0; 
+	depthStencilDesc.MiscFlags      = 0;
+
+	HRESULT res = Device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
+	
+	res = Device->CreateDepthStencilView(depthStencilBuffer, nullptr, &depthStencilView);
+}
+
 void Game::CreateBackBuffer()
 {
 	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
@@ -226,10 +247,11 @@ void Game::PrepareFrame()
 {
 	Context->ClearState();
 
-	Context->OMSetRenderTargets(1, &RenderView, nullptr);
+	Context->OMSetRenderTargets(1, &RenderView, depthStencilView);
 
 	constexpr float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	Context->ClearRenderTargetView(RenderView, color);
+	Context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void Game::PrepareResources()
@@ -273,6 +295,8 @@ void Game::PrepareResources()
 	}
 
 	CreateBackBuffer();
+
+	CreateDepthStencilBuffer();
 }
 
 void Game::Update()

@@ -21,6 +21,7 @@
 class Game
 {
 	void CreateBackBuffer();
+	void CreateDepthStencilBuffer();
 	void InitTimer();
 	void UpdateTimer();
 protected:
@@ -44,7 +45,9 @@ public:
 	std::chrono::steady_clock::time_point PrevTime;
 	ID3D11Texture2D* RenderSRV;
 	ID3D11RenderTargetView* RenderView;
-	int ScreenResized;
+	ID3D11Texture2D* depthStencilBuffer;
+	ID3D11DepthStencilView* depthStencilView;
+	bool ScreenResized;
 	float StartTime;
 	IDXGISwapChain* SwapChain;
 	float TotalTime;

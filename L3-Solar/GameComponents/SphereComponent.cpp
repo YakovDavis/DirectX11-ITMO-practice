@@ -193,6 +193,8 @@ void SphereComponent::Initialize()
 	CD3D11_RASTERIZER_DESC rastDesc = {};
 	rastDesc.CullMode = D3D11_CULL_BACK;
 	rastDesc.FillMode = D3D11_FILL_SOLID;
+	rastDesc.FrontCounterClockwise = false;
+	rastDesc.DepthClipEnable = true;
 
 	res = game->Device->CreateRasterizerState(&rastDesc, &rastState);
 }
