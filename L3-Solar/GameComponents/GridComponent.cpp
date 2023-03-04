@@ -1,77 +1,32 @@
-﻿#include "SphereComponent.h"
+﻿#include "GridComponent.h"
 #include "../Davork/Game.h"
 
 using namespace DirectX;
 using namespace SimpleMath;
 
-SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount, Vector4 col1, Vector4 col2)
-	: GameComponent(g), rotation(Quaternion::Identity), position(Vector3::Zero)
+GridComponent::GridComponent(Game* g, float cellSize, int lineCount)
+	: GameComponent(g)
 {
-	Point topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), col1} );
-	Vector4::Lerp(col1, col2, 0.5f, topPoint.col);
-	Point bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), col1} );
-	Vector4::Lerp(col1, col2, 0.5f, bottomPoint.col);
-
-	points.push_back(topPoint);
-
-	const float phiStep   = XM_PI / static_cast<float>(stackCount);
-	const float thetaStep = XM_2PI / static_cast<float>(sliceCount);
+	constexpr Vector4 color = Vector4(0.15f, 0.15f, 0.15f, 1.0f);
 	
-	for(int i = 1; i <= stackCount-1; ++i)
+	int k = 0;
+	for (int i = 0 - lineCount / 2; i < lineCount / 2; ++i)
 	{
-		const float phi = static_cast<float>(i) * phiStep;
-		
-        for(int j = 0; j <= sliceCount; ++j)
-		{
-			const float theta = static_cast<float>(j) * thetaStep;
-			Point p;
-			p.pos.x = radius * sinf(phi)*cosf(theta);
-			p.pos.y = radius * cosf(phi);
-			p.pos.z = radius * sinf(phi)*sinf(theta);
-        	p.pos.w = 1.0f;
-        	Vector4::Lerp(col1, col2, (sinf(2.0f * phi) * sinf(theta) + 1.0f) / 2.0f, p.col);
-			points.push_back(p);
-		}
+		points.push_back(Point( {Vector4(static_cast<float>(i), 0.0f, - cellSize * lineCount / 2, 1.0f), color} ) );
+		indices.push_back(k++);
+		points.push_back(Point( {Vector4(static_cast<float>(i), 0.0f, cellSize * lineCount / 2, 1.0f), color} ) );
+		indices.push_back(k++);
 	}
-	
-	points.push_back(bottomPoint);
-
-    for(int i = 1; i <= sliceCount; ++i)
+	for (int i = 0 - lineCount / 2; i < lineCount / 2; ++i)
 	{
-		indices.push_back(0);
-		indices.push_back(i + 1);
-		indices.push_back(i);
-	}
-	
-    int baseIndex = 1;
-	const int ringVertexCount = sliceCount + 1;
-	for(int i = 0; i < stackCount - 2; ++i)
-	{
-		for(int j = 0; j < sliceCount; ++j)
-		{
-			indices.push_back(baseIndex + i*ringVertexCount + j);
-			indices.push_back(baseIndex + i*ringVertexCount + j + 1);
-			indices.push_back(baseIndex + (i+1)*ringVertexCount + j);
-
-			indices.push_back(baseIndex + (i+1)*ringVertexCount + j);
-			indices.push_back(baseIndex + i*ringVertexCount + j + 1);
-			indices.push_back(baseIndex + (i+1)*ringVertexCount + j + 1);
-		}
-	}
-	
-	const int southPoleIndex = points.size() - 1;
-	
-	baseIndex = southPoleIndex - ringVertexCount;
-	
-	for(int i = 0; i < sliceCount; ++i)
-	{
-		indices.push_back(southPoleIndex);
-		indices.push_back(baseIndex + i);
-		indices.push_back(baseIndex + i + 1);
+		points.push_back(Point( {Vector4(- cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), color} ) );
+		indices.push_back(k++);
+		points.push_back(Point( {Vector4(cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), color} ) );
+		indices.push_back(k++);
 	}
 }
 
-void SphereComponent::Initialize()
+void GridComponent::Initialize()
 {
 	ID3DBlob* errorVertexCode = nullptr;
 	auto res = D3DCompileFromFile(L"./Shaders/Base3dCol.hlsl",
@@ -193,25 +148,24 @@ void SphereComponent::Initialize()
 	CD3D11_RASTERIZER_DESC rastDesc = {};
 	rastDesc.CullMode = D3D11_CULL_BACK;
 	rastDesc.FillMode = D3D11_FILL_SOLID;
-	rastDesc.FrontCounterClockwise = true;
+	rastDesc.FrontCounterClockwise = false;
 	rastDesc.DepthClipEnable = true;
 
 	res = game->Device->CreateRasterizerState(&rastDesc, &rastState);
 }
 
-void SphereComponent::Update()
+void GridComponent::Update()
 {
-	const Matrix world = Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
-	Matrix worldViewProj = world * game->Camera->GetMatrix();
+	Matrix worldViewProj = game->Camera->GetMatrix();
 	worldViewProj = worldViewProj.Transpose();
 	game->Context->UpdateSubresource(constBuffer, 0, nullptr, &worldViewProj, 0, 0);
 }
 
-void SphereComponent::Reload()
+void GridComponent::Reload()
 {
 }
 
-void SphereComponent::Draw()
+void GridComponent::Draw()
 {
 	game->Context->RSSetState(rastState);
 
@@ -226,7 +180,7 @@ void SphereComponent::Draw()
 	game->Context->RSSetViewports(1, &viewport);
 
 	game->Context->IASetInputLayout(layout);
-	game->Context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	game->Context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	game->Context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	game->Context->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
 	game->Context->VSSetShader(vertexShader, nullptr, 0);
@@ -236,7 +190,7 @@ void SphereComponent::Draw()
 	game->Context->DrawIndexed(indices.size(), 0, 0);
 }
 
-void SphereComponent::DestroyResources()
+void GridComponent::DestroyResources()
 {
 	layout->Release();
 	pixelShader->Release();

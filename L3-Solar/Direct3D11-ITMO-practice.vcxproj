@@ -202,6 +202,7 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="GameComponents\CelestialBodyComponent.cpp" />
+    <ClCompile Include="GameComponents\GridComponent.cpp" />
     <ClCompile Include="GameComponents\QuadComponent.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -794,6 +795,7 @@
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Davork\Camera.h" />
     <ClInclude Include="GameComponents\CelestialBodyComponent.h" />
+    <ClInclude Include="GameComponents\GridComponent.h" />
     <ClInclude Include="GameComponents\QuadComponent.h" />
     <ClInclude Include="GameComponents\SphereComponent.h" />
     <ClInclude Include="GameComponents\TriangleComponent.h" />

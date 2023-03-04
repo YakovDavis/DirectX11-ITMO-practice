@@ -3,6 +3,7 @@
 #include <string>
 
 #include "CameraController.h"
+#include "GameComponents/GridComponent.h"
 #include "GameComponents/SphereComponent.h"
 
 using namespace DirectX;
@@ -11,6 +12,9 @@ using namespace SimpleMath;
 SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 {
 	//srand(static_cast<unsigned>(time(nullptr)));
+
+	//Grid
+	Components.push_back(new GridComponent(this, 1.0f, 100));
 
 	// Sun
 	CelestialBodyDesc sunDesc = {};

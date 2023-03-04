@@ -218,6 +218,8 @@ void Game::DestroyResources()
 	backBuffer->Release();
 	RenderView->Release();
 	SwapChain->Release();
+	depthStencilView->Release();
+	depthStencilBuffer->Release();
 }
 
 void Game::Draw()
