@@ -30,7 +30,8 @@ protected:
     UINT offsets[1];
     std::vector<Point> points;
     std::vector<int> indices;
-    DirectX::SimpleMath::Matrix world;
+    DirectX::SimpleMath::Quaternion rotation;
+    DirectX::SimpleMath::Vector3 position;
 public:
     SphereComponent(Game* game, float radius, int sliceCount, int stackCount, DirectX::SimpleMath::Vector4 col1, DirectX::SimpleMath::Vector4 col2);
     void DestroyResources() override;

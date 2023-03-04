@@ -4,7 +4,8 @@
 using namespace DirectX;
 using namespace SimpleMath;
 
-SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount, Vector4 col1, Vector4 col2) : GameComponent(g), world(Matrix::Identity)
+SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount, Vector4 col1, Vector4 col2)
+	: GameComponent(g), rotation(Quaternion::Identity), position(Vector3::Zero)
 {
 	Point topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), col1} );
 	Vector4::Lerp(col1, col2, 0.5f, topPoint.col);
@@ -198,6 +199,7 @@ void SphereComponent::Initialize()
 
 void SphereComponent::Update()
 {
+	const Matrix world = Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 	Matrix worldViewProj = world * game->Camera->GetMatrix();
 	worldViewProj = worldViewProj.Transpose();
 	game->Context->UpdateSubresource(constBuffer, 0, nullptr, &worldViewProj, 0, 0);
