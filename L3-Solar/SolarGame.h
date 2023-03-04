@@ -2,12 +2,12 @@
 #include "CameraController.h"
 #include "Davork/Camera.h"
 #include "Davork/Game.h"
-#include "GameComponents/SphereComponent.h"
+#include "GameComponents/CelestialBodyComponent.h"
 
 class SolarGame : public Game
 {
 public:
 	CameraController controller;
-	SphereComponent* sphere;
+	CelestialBodyComponent* sun;
 	SolarGame();
 };

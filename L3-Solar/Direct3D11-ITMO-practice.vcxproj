@@ -201,6 +201,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="GameComponents\CelestialBodyComponent.cpp" />
     <ClCompile Include="GameComponents\QuadComponent.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -792,6 +793,7 @@
   <ItemGroup>
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Davork\Camera.h" />
+    <ClInclude Include="GameComponents\CelestialBodyComponent.h" />
     <ClInclude Include="GameComponents\QuadComponent.h" />
     <ClInclude Include="GameComponents\SphereComponent.h" />
     <ClInclude Include="GameComponents\TriangleComponent.h" />

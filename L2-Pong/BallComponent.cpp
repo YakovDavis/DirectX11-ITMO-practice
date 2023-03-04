@@ -55,6 +55,8 @@ void BallComponent::GenRndDirection()
 
 BallComponent::BallComponent(Game* g) : QuadComponent(g)
 {
+	SimpleMath::Ray r;
+	r.Intersects()
 	pGame = dynamic_cast<PongGame*>(g);
 	SimpleMath::Vector4 pointsTmp[8] = {
 		SimpleMath::Vector4(0.01f, 0.01f, 0.5f, 1.0f),	SimpleMath::Vector4(1.0f, 1.0f, 1.0f, 1.0f),
