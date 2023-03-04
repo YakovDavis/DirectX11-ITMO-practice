@@ -14,7 +14,7 @@ SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 	//srand(static_cast<unsigned>(time(nullptr)));
 
 	//Grid
-	Components.push_back(new GridComponent(this, 1.0f, 100));
+	Components.push_back(new GridComponent(this, 1.0f, 1000));
 
 	// Sun
 	CelestialBodyDesc sunDesc = {};
@@ -31,6 +31,8 @@ SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 	mercuryDesc.OrbitAnchor = celestialBodies["sun"];
 	mercuryDesc.OrbitRadius = 4.0f;
 	mercuryDesc.OrbitSpeed = 2.0f;
+	mercuryDesc.OrbitOrientationForward = XMVector4Transform(mercuryDesc.OrbitOrientationForward, Matrix::CreateFromAxisAngle(Vector3::Right, 7.0f * XM_PI / 180.0f));
+	mercuryDesc.OrbitOrientationUp = XMVector4Transform(mercuryDesc.OrbitOrientationUp, Matrix::CreateFromAxisAngle(Vector3::Right, 7.0f * XM_PI / 180.0f));
 	celestialBodies.insert( {"mercury", new CelestialBodyComponent(this, mercuryDesc)} );
 
 	// Venus
@@ -38,8 +40,10 @@ SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 	venusDesc.SpinSpeed = -0.8f;
 	venusDesc.Radius = 1.0f;
 	venusDesc.OrbitAnchor = celestialBodies["sun"];
-	venusDesc.OrbitRadius = 8.0f;
+	venusDesc.OrbitRadius = 7.0f;
 	venusDesc.OrbitSpeed = 1.0f;
+	venusDesc.OrbitOrientationForward = XMVector4Transform(mercuryDesc.OrbitOrientationForward, Matrix::CreateFromAxisAngle(Vector3::Right, 3.0f * XM_PI / 180.0f));
+	venusDesc.OrbitOrientationUp = XMVector4Transform(mercuryDesc.OrbitOrientationUp, Matrix::CreateFromAxisAngle(Vector3::Right, 3.0f * XM_PI / 180.0f));
 	venusDesc.PrimaryColor = Vector4(51.f / 255.f, 25.f / 255.f, 0.0f / 255.f, 1.f);
 	venusDesc.SecondaryColor = Vector4(153.f / 255.f, 76.f / 255.f, 0.0f / 255.f, 1.f);
 	celestialBodies.insert( {"venus", new CelestialBodyComponent(this, venusDesc)} );
@@ -49,7 +53,7 @@ SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 	earthDesc.SpinSpeed = 0.8f;
 	earthDesc.Radius = 1.0f;
 	earthDesc.OrbitAnchor = celestialBodies["sun"];
-	earthDesc.OrbitRadius = 11.0f;
+	earthDesc.OrbitRadius = 10.0f;
 	earthDesc.OrbitSpeed = 0.8f;
 	earthDesc.PrimaryColor = Vector4(0.0f, 0.0f, 0.5f, 1.0f);
 	earthDesc.SecondaryColor = Vector4(0.0f, 0.7f, 0.0f, 1.0f);
@@ -64,10 +68,29 @@ SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 	moonDesc.OrbitSpeed = 0.8f;
 	celestialBodies.insert( {"moon", new CelestialBodyComponent(this, moonDesc)} );
 
+	// Mars
+	CelestialBodyDesc marsDesc = {};
+	marsDesc.SpinSpeed = -0.8f;
+	marsDesc.Radius = 0.6f;
+	marsDesc.OrbitAnchor = celestialBodies["sun"];
+	marsDesc.OrbitRadius = 15.0f;
+	marsDesc.OrbitSpeed = 1.0f;
+	marsDesc.OrbitOrientationForward = XMVector4Transform(mercuryDesc.OrbitOrientationForward, Matrix::CreateFromAxisAngle(Vector3::Right, 2.0f * XM_PI / 180.0f));
+	marsDesc.OrbitOrientationUp = XMVector4Transform(mercuryDesc.OrbitOrientationUp, Matrix::CreateFromAxisAngle(Vector3::Right, 2.0f * XM_PI / 180.0f));
+	marsDesc.PrimaryColor = Vector4(51.f / 255.f, 25.f / 255.f, 0.0f / 255.f, 1.f);
+	marsDesc.SecondaryColor = Vector4(153.f / 255.f, 76.f / 255.f, 0.0f / 255.f, 1.f);
+	celestialBodies.insert( {"mars", new CelestialBodyComponent(this, marsDesc)} );
+
 	// Adding all bodies to Components vector
 	for (const std::pair<const std::string, CelestialBodyComponent*>& n : celestialBodies)
 		Components.push_back(n.second);
 
 	// Camera controller binding
 	InputDev->MouseMove.AddRaw(&controller, &CameraController::OnMouseMove);
+}
+
+void SolarGame::Update()
+{
+	controller.Update();
+	Game::Update();
 }

@@ -12,7 +12,7 @@ Camera::Camera()
     AspectRatio = 1.0f;
     NearPlane = 1.0f;
     FarPlane = 1000.f;
-    Position = Vector3::Backward * 5;
+    Position = Vector3::Backward * 10.0f;
     Target = Vector3::Zero;
     Up = Vector3::Up;
 }

@@ -12,4 +12,5 @@ public:
 	std::unordered_map<std::string, CelestialBodyComponent*> celestialBodies;
 	CameraController controller;
 	SolarGame();
+	void Update() override;
 };
