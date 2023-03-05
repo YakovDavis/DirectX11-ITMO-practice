@@ -45,6 +45,11 @@ void CameraController::OnMouseMove(const InputDevice::MouseMoveEventArgs& args)
 
 void CameraController::Update()
 {
+    if (game->InputDevice->IsKeyDown(Keys::F1))
+        game->Camera->IsOrthographic = false;
+    if (game->InputDevice->IsKeyDown(Keys::F2))
+        game->Camera->IsOrthographic = true;
+    
     if (OrbitMode && (game->InputDevice->IsKeyDown(Keys::W) || game->InputDevice->IsKeyDown(Keys::A) || game->InputDevice->IsKeyDown(Keys::S)
         || game->InputDevice->IsKeyDown(Keys::D) || game->InputDevice->IsKeyDown(Keys::E) || game->InputDevice->IsKeyDown(Keys::Z)))
     {

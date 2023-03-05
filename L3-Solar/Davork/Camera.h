@@ -6,6 +6,9 @@ class Camera
 protected:
     DirectX::SimpleMath::Matrix viewProj;
 public:
+    bool IsOrthographic;
+    float OrthographicWidth;
+    float OrthographicHeight;
     float FOV;
     float AspectRatio;
     float NearPlane;

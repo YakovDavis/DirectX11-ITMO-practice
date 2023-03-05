@@ -15,11 +15,17 @@ Camera::Camera()
     Position = Vector3::Backward * 10.0f;
     Target = Vector3::Zero;
     Up = Vector3::Up;
+    IsOrthographic = false;
+    OrthographicWidth = 50.0f;
+    OrthographicHeight = 50.0f;
 }
 
 void Camera::UpdateMatrix()
 {
-    viewProj = Matrix::CreateLookAt(Position, Target, Up) * Matrix::CreatePerspectiveFieldOfView(FOV, AspectRatio, NearPlane, FarPlane);
+    if (IsOrthographic)
+        viewProj = Matrix::CreateLookAt(Position, Target, Up) * Matrix::CreateOrthographic(OrthographicWidth, OrthographicHeight, NearPlane / 10.0f, FarPlane);
+    else
+        viewProj = Matrix::CreateLookAt(Position, Target, Up) * Matrix::CreatePerspectiveFieldOfView(FOV, AspectRatio, NearPlane, FarPlane);
 }
 
 Matrix Camera::GetMatrix() const
