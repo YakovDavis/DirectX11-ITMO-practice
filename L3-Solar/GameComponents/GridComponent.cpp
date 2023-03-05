@@ -8,20 +8,21 @@ GridComponent::GridComponent(Game* g, float cellSize, int lineCount)
 	: GameComponent(g)
 {
 	constexpr Vector4 color = Vector4(0.15f, 0.15f, 0.15f, 1.0f);
+	constexpr Vector4 boldColor = Vector4(0.3f, 0.3f, 0.3f, 1.0f);
 	
 	int k = 0;
 	for (int i = 0 - lineCount / 2; i < lineCount / 2; ++i)
 	{
-		points.push_back(Point( {Vector4(static_cast<float>(i), 0.0f, - cellSize * lineCount / 2, 1.0f), color} ) );
+		points.push_back(Point( {Vector4(static_cast<float>(i), 0.0f, - cellSize * lineCount / 2, 1.0f), i % 5 == 0 ? boldColor : color} ) );
 		indices.push_back(k++);
-		points.push_back(Point( {Vector4(static_cast<float>(i), 0.0f, cellSize * lineCount / 2, 1.0f), color} ) );
+		points.push_back(Point( {Vector4(static_cast<float>(i), 0.0f, cellSize * lineCount / 2, 1.0f), i % 5 == 0 ? boldColor : color} ) );
 		indices.push_back(k++);
 	}
 	for (int i = 0 - lineCount / 2; i < lineCount / 2; ++i)
 	{
-		points.push_back(Point( {Vector4(- cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), color} ) );
+		points.push_back(Point( {Vector4(- cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), i % 5 == 0 ? boldColor : color} ) );
 		indices.push_back(k++);
-		points.push_back(Point( {Vector4(cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), color} ) );
+		points.push_back(Point( {Vector4(cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), i % 5 == 0 ? boldColor : color} ) );
 		indices.push_back(k++);
 	}
 }

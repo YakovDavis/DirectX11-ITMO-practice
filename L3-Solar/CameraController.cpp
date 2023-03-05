@@ -31,6 +31,10 @@ void CameraController::OnMouseMove(const InputDevice::MouseMoveEventArgs& args)
         if (game->InputDev->IsKeyDown(Keys::LeftButton))
         {
             yaw -= 0.004f * game->InputDev->MouseOffset.x;
+            while (yaw < -XM_2PI)
+                yaw += XM_2PI;
+            while (yaw < XM_2PI)
+                yaw += XM_2PI;
             pitch -= 0.004f * game->InputDev->MouseOffset.y;
             game->Camera->Up = XMVector4Transform(Vector3::Up, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
             game->Camera->Target = game->Camera->Position;
