@@ -53,7 +53,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 					//	raw->data.keyboard.Message,
 					//	raw->data.keyboard.VKey);
 
-					pThis->InputDev->OnKeyDown({
+					pThis->InputDevice->OnKeyDown({
 						raw->data.keyboard.MakeCode,
 						raw->data.keyboard.Flags,
 						raw->data.keyboard.VKey,
@@ -63,7 +63,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 				else if (raw->header.dwType == RIM_TYPEMOUSE)
 				{
 					//printf(" Mouse: X=%04d Y:%04d \n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
-					pThis->InputDev->OnMouseMove({
+					pThis->InputDevice->OnMouseMove({
 						raw->data.mouse.usFlags,
 						raw->data.mouse.usButtonFlags,
 						static_cast<int>(raw->data.mouse.ulExtraInformation),
@@ -117,7 +117,7 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested(fa
 	Instance = GetModuleHandle(nullptr);
 
 	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight, this);
-	InputDev = new InputDevice(this);
+	InputDevice = new ::InputDevice(this);
 
 	Camera = new ::Camera();
 	Camera->AspectRatio = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
@@ -130,7 +130,7 @@ Game::~Game()
 		delete c;
 	}
 	delete Display;
-	delete InputDev;
+	delete InputDevice;
 }
 
 void Game::Exit()

@@ -121,7 +121,7 @@ SolarGame::SolarGame() : Game(L"Solar Game", 800, 800), controller(this)
 		Components.push_back(n.second);
 
 	// Camera controller binding
-	InputDev->MouseMove.AddRaw(&controller, &CameraController::OnMouseMove);
+	InputDevice->MouseMove.AddRaw(&controller, &CameraController::OnMouseMove);
 }
 
 void SolarGame::Update()

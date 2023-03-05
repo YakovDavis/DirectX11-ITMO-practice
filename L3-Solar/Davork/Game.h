@@ -54,7 +54,7 @@ public:
 	float DeltaTime;
 	std::vector<GameComponent*> Components;
 	DisplayWin32* Display;
-	InputDevice* InputDev;
+	InputDevice* InputDevice;
 	Camera* Camera;
 	unsigned int FrameCount;
 	Game(LPCWSTR name, int screenWidth, int screenHeight);
