@@ -280,7 +280,6 @@
     <ClCompile Include="Davork\GameComponents\GridComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\QuadComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\SphereComponent.cpp" />
-    <ClCompile Include="Davork\GameComponents\TriangleComponent.cpp" />
     <ClCompile Include="Davork\OrbitCameraController.cpp" />
     <ClCompile Include="Davork\Vertex.cpp" />
     <ClCompile Include="Davork\Delegates.cpp">
@@ -736,7 +735,6 @@
     <ClInclude Include="Davork\GameComponents\GridComponent.h" />
     <ClInclude Include="Davork\GameComponents\QuadComponent.h" />
     <ClInclude Include="Davork\GameComponents\SphereComponent.h" />
-    <ClInclude Include="Davork\GameComponents\TriangleComponent.h" />
     <ClInclude Include="Davork\LoaderHelpers.h" />
     <ClInclude Include="Davork\OrbitCameraController.h" />
     <ClInclude Include="Davork\Vertex.h" />
