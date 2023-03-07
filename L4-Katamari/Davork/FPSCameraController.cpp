@@ -4,7 +4,7 @@
 using namespace DirectX;
 using namespace SimpleMath;
 
-FPSCameraController::FPSCameraController(Game* g,Camera* c) : game(g), camera(c), yaw(0.0f), pitch(0.0f), speed(0.2f),
+FPSCameraController::FPSCameraController(Game* g, Camera* c) : game(g), camera(c), yaw(0.0f), pitch(0.0f), speed(0.2f),
     sensitivityX(0.004f), sensitivityY(0.004f), isLMBActivated(true)
 {
 }
@@ -16,9 +16,13 @@ void FPSCameraController::OnMouseMove(const InputDevice::MouseMoveEventArgs& arg
         yaw -= sensitivityX * game->InputDevice->MouseOffset.x;
         while (yaw < -XM_2PI)
             yaw += XM_2PI;
-        while (yaw < XM_2PI)
-            yaw += XM_2PI;
+        while (yaw > XM_2PI)
+            yaw -= XM_2PI;
         pitch -= sensitivityY * game->InputDevice->MouseOffset.y;
+        while (pitch < -XM_2PI)
+            pitch += XM_2PI;
+        while (pitch > XM_2PI)
+            pitch -= XM_2PI;
         camera->Up = XMVector4Transform(Vector3::Up, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
         camera->Target = game->Camera->Position;
         camera->Target += XMVector4Transform(Vector3::Forward, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
