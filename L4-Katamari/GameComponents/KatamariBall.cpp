@@ -5,7 +5,7 @@
 using namespace DirectX;
 using namespace SimpleMath;
 
-KatamariBall::KatamariBall(Game* game) : SphereComponent(game, 1.0f, 32, 32, L"Textures/compost.dds"),
+KatamariBall::KatamariBall(Game* game) : SphereComponent(game, 1.0f, 32, 32, L"Textures/ac.dds"),
     savedRot(Quaternion::Identity), rotationDrag(0.15f), rotationMaxSpeed(0.1f), velocity(Vector3::Zero), moveMaxSpeed(10.0f), moveDrag(5.0f)
 {
 }
