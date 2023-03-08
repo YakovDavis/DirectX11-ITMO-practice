@@ -720,6 +720,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="GameComponents\KatamariBall.cpp" />
     <ClCompile Include="KatamariGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
   </ItemGroup>
@@ -746,6 +747,7 @@
     <ClInclude Include="Davork\Keys.h" />
     <ClInclude Include="Davork\PlatformHelpers.h" />
     <ClInclude Include="Davork\SimpleMath.h" />
+    <ClInclude Include="GameComponents\KatamariBall.h" />
     <ClInclude Include="KatamariGame.h" />
   </ItemGroup>
   <ItemGroup>

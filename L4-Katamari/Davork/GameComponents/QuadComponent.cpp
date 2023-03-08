@@ -15,10 +15,10 @@ QuadComponent::QuadComponent(Game* g, const wchar_t* diffuseTextureName) : BaseR
 {
 	textureFileName = diffuseTextureName;
 	
-	points.push_back( { Vector4(0.5f, 0.5f, 0.0f, 1.0f),	Vector4(16.0f, 16.0f, 0.0f, 0.0f) } );
+	points.push_back( { Vector4(0.5f, 0.5f, 0.0f, 1.0f),	Vector4(64.0f, 64.0f, 0.0f, 0.0f) } );
 	points.push_back( { Vector4(-0.5f, -0.5f, 0.0f, 1.0f),Vector4(0.0f, 0.0f, 0.0f, 0.0f) } );
-	points.push_back( { Vector4(0.5f, -0.5f, 0.0f, 1.0f), Vector4(0.0f, 16.0f, 0.0f, 0.0f) } );
-	points.push_back( { Vector4(-0.5f, 0.5f, 0.0f, 1.0f), Vector4(16.0f, 0.0f, 0.0f, 0.0f) } );
+	points.push_back( { Vector4(0.5f, -0.5f, 0.0f, 1.0f), Vector4(0.0f, 64.0f, 0.0f, 0.0f) } );
+	points.push_back( { Vector4(-0.5f, 0.5f, 0.0f, 1.0f), Vector4(64.0f, 0.0f, 0.0f, 0.0f) } );
 
 	indices = { 0,1,2, 1,0,3 };
 }

@@ -1,12 +1,15 @@
 ﻿#pragma once
 
-#include "Davork/FPSCameraController.h"
 #include "Davork/Game.h"
+#include "Davork/OrbitCameraController.h"
+
+class KatamariBall;
 
 class KatamariGame : public Game
 {
 protected:
-    FPSCameraController* fpsCameraController{};
+    KatamariBall* ball;
+    OrbitCameraController* orbitCameraController{};
 public:
     KatamariGame();
     void Update() override;
