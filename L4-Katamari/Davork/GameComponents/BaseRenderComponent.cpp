@@ -251,10 +251,15 @@ void BaseRenderComponent::Update()
 {
 	rotation.Normalize();
 	const Matrix world = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
-	CBDataPerObject objData = {(world * game->Camera->GetMatrix()).Transpose()};
-	objData.invTrWorld = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert();
-	CBDataPerScene sceneData = { Vector4(1.0f, 1.0f, 1.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 0.4f),
-		Vector4(game->Camera->Position.x - game->Camera->Target.x, game->Camera->Position.y - game->Camera->Target.y,  game->Camera->Position.z - game->Camera->Target.z, 0.0f)};
+	
+	CBDataPerObject objData = {};
+	objData.worldViewProj = world * game->Camera->GetMatrix();
+	objData.invTrWorld = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose();
+	
+	CBDataPerScene sceneData = {};
+	sceneData.lightPos = Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+	sceneData.lightColorAmbStr = Vector4(1.0f, 1.0f, 1.0f, 0.4f);
+	sceneData.viewDirSpecStr = Vector4(game->Camera->Position.x - game->Camera->Target.x, game->Camera->Position.y - game->Camera->Target.y,  game->Camera->Position.z - game->Camera->Target.z, 0.0f);
 	sceneData.viewDirSpecStr.Normalize();
 	sceneData.viewDirSpecStr.w = 0.5f;
 	sceneData.lightPos.Normalize();
