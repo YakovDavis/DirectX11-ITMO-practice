@@ -12,6 +12,7 @@ KatamariFurnitureComponent::KatamariFurnitureComponent(Game* g, const std::strin
 
 void KatamariFurnitureComponent::Update()
 {
+    MeshRenderComponent::Update();
     if (isPickedUp)
     {
         if (kb)
@@ -20,7 +21,6 @@ void KatamariFurnitureComponent::Update()
             SetRotation(invKbRot * kb->GetRotation());
         }
     }
-    MeshRenderComponent::Update();
 }
 
 void KatamariFurnitureComponent::SetPosition(Vector3 p)

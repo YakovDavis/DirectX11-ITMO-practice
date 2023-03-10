@@ -77,8 +77,6 @@ ID3D11Resource* ResourceFactory::GetTextureBuffer(const wchar_t* name)
 
     auto res = DirectX::CreateDDSTextureFromFile(activeGame->Device.Get(), name, &textures[name].textureBuffer, &textures[name].textureView);
 
-    activeGame->Context->GenerateMips(textures[name].textureView);
-
     return textures[name].textureBuffer;
 }
 
@@ -88,8 +86,6 @@ ID3D11ShaderResourceView* ResourceFactory::GetTextureView(const wchar_t* name)
         return textures[name].textureView;
 
     auto res = DirectX::CreateDDSTextureFromFile(activeGame->Device.Get(), name, &textures[name].textureBuffer, &textures[name].textureView);
-
-    activeGame->Context->GenerateMips(textures[name].textureView);
 
     return textures[name].textureView;
 }

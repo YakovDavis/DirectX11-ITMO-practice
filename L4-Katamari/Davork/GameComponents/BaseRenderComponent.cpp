@@ -193,7 +193,8 @@ void BaseRenderComponent::Initialize()
 	samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerStateDesc.MaxLOD = INT_MAX;
+	samplerStateDesc.MinLOD = 0.0f;
+	samplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	
 	auto res = game->Device->CreateSamplerState(&samplerStateDesc, &samplerState);
 
