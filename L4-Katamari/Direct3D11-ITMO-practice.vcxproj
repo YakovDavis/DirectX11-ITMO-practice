@@ -282,6 +282,7 @@
     <ClCompile Include="Davork\GameComponents\QuadComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\SphereComponent.cpp" />
     <ClCompile Include="Davork\OrbitCameraController.cpp" />
+    <ClCompile Include="Davork\ResourceFactory.cpp" />
     <ClCompile Include="Davork\Vertex.cpp" />
     <ClCompile Include="Davork\Delegates.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -815,6 +816,7 @@
     <ClInclude Include="Davork\GameComponents\SphereComponent.h" />
     <ClInclude Include="Davork\LoaderHelpers.h" />
     <ClInclude Include="Davork\OrbitCameraController.h" />
+    <ClInclude Include="Davork\ResourceFactory.h" />
     <ClInclude Include="Davork\Vertex.h" />
     <ClInclude Include="Davork\Delegates.h" />
     <ClInclude Include="Davork\DisplayWin32.h" />

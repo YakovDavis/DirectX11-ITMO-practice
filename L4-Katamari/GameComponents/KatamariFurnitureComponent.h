@@ -10,6 +10,7 @@ public:
     DirectX::SimpleMath::Vector3 initRelPos;
     DirectX::SimpleMath::Quaternion invKbRot;
     DirectX::SimpleMath::Vector3 originCollisionOffset;
+    float gameSize;
     void Update() override;
     void SetPosition(DirectX::SimpleMath::Vector3 p) override;
 };
