@@ -6,4 +6,5 @@ struct Vertex
 {
     DirectX::SimpleMath::Vector4 pos;
     DirectX::SimpleMath::Vector4 tex;
+    DirectX::SimpleMath::Vector4 normal;
 };

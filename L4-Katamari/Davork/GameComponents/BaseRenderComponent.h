@@ -11,6 +11,18 @@ class Game;
 
 class BaseRenderComponent : public GameComponent
 {
+public:
+    struct CBDataPerObject
+    {
+        DirectX::SimpleMath::Matrix worldViewProj;
+        DirectX::SimpleMath::Matrix invTrWorld;
+    };
+    struct CBDataPerScene
+    {
+        DirectX::SimpleMath::Vector4 lightPos;
+        DirectX::SimpleMath::Vector4 lightColorAmbStr;
+        DirectX::SimpleMath::Vector4 viewDirSpecStr;
+    };
 protected:
     ID3D11InputLayout* layout;
     //ID3D11PixelShader* pixelShader;
@@ -20,7 +32,7 @@ protected:
     //ID3DBlob* vertexShaderByteCode;
     ID3D11Buffer* vertexBuffer;
     ID3D11Buffer* indexBuffer;
-    ID3D11Buffer* constBufferPerObject;
+    ID3D11Buffer** constBuffers;
     UINT strides[1];
     UINT offsets[1];
     std::vector<Vertex> points{};

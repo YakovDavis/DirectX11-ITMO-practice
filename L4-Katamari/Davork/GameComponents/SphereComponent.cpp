@@ -9,8 +9,8 @@ SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stac
 {
 	textureFileName = diffuseTextureName;
 	
-	Vertex topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), Vector4(0.0f, 0.0f, 0.0f, 0.0f) } );
-	Vertex bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
+	Vertex topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), Vector4(0.0f, 0.0f, 0.0f, 0.0f), Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
+	Vertex bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), Vector4(0.0f, 1.0f, 0.0f, 0.0f), Vector4(0.0f, -1.0f, 0.0f, 0.0f) } );
 
 	points.push_back(topPoint);
 
@@ -31,6 +31,9 @@ SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stac
         	p.pos.w = 1.0f;
         	p.tex.x = theta / XM_2PI;
         	p.tex.y = phi / XM_PI;
+        	p.normal = p.pos;
+        	p.normal.w = 0.0f;
+        	p.normal.Normalize();
 			points.push_back(p);
 		}
 	}

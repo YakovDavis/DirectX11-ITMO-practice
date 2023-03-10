@@ -13,9 +13,10 @@ void KatamariBall::UpdateSize(float absorbedSize)
     collision.Radius = tmp;
     position.y = tmp;
     rotationMaxSpeed = 0.1f / (tmp * tmp);
-    if (rotationMaxSpeed < 0.01f)
-        rotationMaxSpeed = 0.01f;
+    if (rotationMaxSpeed < 0.005f)
+        rotationMaxSpeed = 0.005f;
     moveMaxSpeed = 8.0f * sqrtf(tmp);
+    rotationDrag = 0.1f + 0.06f / sqrtf(tmp);
     outline->UpdateRadius(tmp);
     gameSize = tmp;
 #ifdef _DEBUG
