@@ -239,7 +239,7 @@ void BaseRenderComponent::Update()
 {
 	rotation.Normalize();
 	const Matrix world = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
-	const Matrix worldViewProj = (world * game->Camera->GetMatrix()).Transpose();
+	const Matrix worldViewProj = world * game->Camera->GetMatrix();
 
 #ifdef CBUFFER_MAPPING
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
