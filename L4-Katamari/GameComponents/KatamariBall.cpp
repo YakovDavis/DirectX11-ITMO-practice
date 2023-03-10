@@ -98,7 +98,7 @@ void KatamariBall::SetDirection(Vector3 dir)
     velocity = tmp * moveMaxSpeed;
 }
 
-void KatamariBall::SetPosition(DirectX::SimpleMath::Vector3 p)
+void KatamariBall::SetPosition(Vector3 p)
 {
     outline->SetPosition(p);
     SphereComponent::SetPosition(p);
