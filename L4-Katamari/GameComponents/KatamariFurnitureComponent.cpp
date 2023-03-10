@@ -6,7 +6,7 @@ using namespace DirectX;
 using namespace SimpleMath;
 
 KatamariFurnitureComponent::KatamariFurnitureComponent(Game* g, const std::string fileNameModel, const wchar_t* fileNameTexture, float katSize, Vector3 collOffset) :
-    MeshRenderComponent(g, fileNameModel, fileNameTexture), collision(position + collOffset, katSize), isPickedUp(false), originCollisionOffset(collOffset)
+    MeshRenderComponent(g, fileNameModel, fileNameTexture), isPickedUp(false), collision(position + collOffset, katSize), originCollisionOffset(collOffset), gameSize(katSize)
 {
 }
 

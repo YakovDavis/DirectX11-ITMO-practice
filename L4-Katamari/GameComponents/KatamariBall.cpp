@@ -9,7 +9,7 @@ using namespace SimpleMath;
 
 void KatamariBall::UpdateSize(float absorbedSize)
 {
-    float tmp = sqrtf(collision.Radius * collision.Radius + absorbedSize * absorbedSize);
+    float tmp = sqrtf(gameSize * gameSize + absorbedSize * absorbedSize);
     collision.Radius = tmp;
     position.y = tmp;
     rotationMaxSpeed = 0.1f / (tmp * tmp);
@@ -17,6 +17,7 @@ void KatamariBall::UpdateSize(float absorbedSize)
         rotationMaxSpeed = 0.01f;
     moveMaxSpeed = 8.0f * sqrtf(tmp);
     outline->UpdateRadius(tmp);
+    gameSize = tmp;
 #ifdef _DEBUG
     std::cout << tmp << std::endl;
 #endif
@@ -24,7 +25,7 @@ void KatamariBall::UpdateSize(float absorbedSize)
 
 KatamariBall::KatamariBall(Game* game) : SphereComponent(game, 1.0f, 32, 32, L"Textures/ac.dds"),
                                          outline(new KatamariBallOutline(game, 1.0f, 16, 16, L"Textures/ac.dds")), rotationDrag(0.14f), rotationMaxSpeed(0.1f), moveMaxSpeed(8.0f), moveDrag(5.0f), savedRot(Quaternion::Identity),
-                                         velocity(Vector3::Zero), collision(position, 1.0f)
+                                         velocity(Vector3::Zero), collision(position, 1.0f), gameSize(1.0f)
 {
     kGame = dynamic_cast<KatamariGame*>(game);
 }
@@ -52,13 +53,13 @@ void KatamariBall::Update()
     
     for (auto furn : kGame->furniture)
     {
-        if (collision.Intersects(furn->collision) && !furn->isPickedUp && collision.Radius > furn->collision.Radius)
+        if (collision.Intersects(furn->collision) && !furn->isPickedUp && gameSize > furn->gameSize)
         {
             furn->isPickedUp = true;
             furn->kb = this;
             furn->initRelPos = furn->GetPosition() - GetPosition();
             rotation.Inverse(furn->invKbRot);
-            UpdateSize(furn->collision.Radius);
+            UpdateSize(furn->gameSize);
         }
     }
     

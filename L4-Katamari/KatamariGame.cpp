@@ -26,6 +26,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     {
         KatamariFurnitureComponent* stool = new KatamariFurnitureComponent(this, "Models/stool.obj", L"Textures/stool.dds", 1.5f, Vector3(0.0f, 0.8f, 0.0f));
         stool->SetPosition(Vector3(static_cast<float>(rand()) / RAND_MAX * 100.0f - 50.0f, 0.0f, static_cast<float>(rand()) / RAND_MAX  * 100.0f - 50.0f));
+        stool->collision.Radius = 0.8f;
         Components.push_back(stool);
         furniture.push_back(stool);
     }
@@ -35,6 +36,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
         KatamariFurnitureComponent* strawberry = new KatamariFurnitureComponent(this, "Models/strawberry.obj", L"Textures/strawberry.dds", 0.4f, Vector3(0.0f, 0.5f, 0.0f));
         strawberry->SetScale(Vector3(0.1f, 0.1f, 0.1f));
         strawberry->SetPosition(Vector3(static_cast<float>(rand()) / RAND_MAX * 100.0f - 50.0f, 0.0f, static_cast<float>(rand()) / RAND_MAX  * 100.0f - 50.0f));
+        strawberry->collision.Radius = 0.1f;
         Components.push_back(strawberry);
         furniture.push_back(strawberry);
     }
@@ -44,6 +46,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
         KatamariFurnitureComponent* duck = new KatamariFurnitureComponent(this, "Models/duck.obj", L"Textures/duck.dds", 1.2f, Vector3(0.0f, 1.0f, 0.0f));
         duck->SetScale(Vector3(0.02f, 0.02f, 0.02f));
         duck->SetPosition(Vector3(static_cast<float>(rand()) / RAND_MAX * 100.0f - 50.0f, 0.0f, static_cast<float>(rand()) / RAND_MAX  * 100.0f - 50.0f));
+        duck->collision.Radius = 0.2f;
         Components.push_back(duck);
         furniture.push_back(duck);
     }
@@ -51,6 +54,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     KatamariFurnitureComponent* sofa = new KatamariFurnitureComponent(this, "Models/sofa.obj", L"Textures/sofa1.dds", 3.0f, Vector3(0.0f, 1.0f, 0.0f));
     sofa->SetScale(Vector3(7.0f, 7.0f, 7.0f));
     sofa->SetPosition(Vector3(-1.0f, 0.0f, 10.0f));
+    sofa->collision.Radius = 2.0f;
     Components.push_back(sofa);
     furniture.push_back(sofa);
 
@@ -58,6 +62,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     sofa1->SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Up, XM_PI / 2.0f));
     sofa1->SetScale(Vector3(7.0f, 7.0f, 7.0f));
     sofa1->SetPosition(Vector3(-8.0f, 0.0f, 10.0f));
+    sofa->collision.Radius = 2.0f;
     Components.push_back(sofa1);
     furniture.push_back(sofa1);
 

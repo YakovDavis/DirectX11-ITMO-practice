@@ -1,5 +1,7 @@
 #include "Game.h"
 
+#include "ResourceFactory.h"
+
 LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {
 	Game* pThis;
@@ -299,6 +301,8 @@ void Game::PrepareResources()
 	CreateBackBuffer();
 
 	CreateDepthStencilBuffer();
+
+	ResourceFactory::Initialize(this);
 }
 
 void Game::Update()

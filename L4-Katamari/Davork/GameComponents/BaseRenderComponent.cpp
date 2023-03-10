@@ -1,6 +1,7 @@
 ﻿#include "BaseRenderComponent.h"
 #include "../Game.h"
 #include "../DDSTextureLoader.h"
+#include "../ResourceFactory.h"
 
 #pragma warning(disable : 4267)
 
@@ -22,8 +23,8 @@ CD3D11_RASTERIZER_DESC BaseRenderComponent::CreateRasterizerStateDesc()
 }
 
 BaseRenderComponent::BaseRenderComponent(Game* g)
-	: GameComponent(g), layout(nullptr), pixelShader(nullptr), pixelShaderByteCode(nullptr), rastState(nullptr),
-	vertexShader(nullptr), vertexShaderByteCode(nullptr), vertexBuffer(nullptr), indexBuffer(nullptr),
+	: GameComponent(g), layout(nullptr),/* pixelShader(nullptr), pixelShaderByteCode(nullptr), rastState(nullptr),
+	vertexShader(nullptr), vertexShaderByteCode(nullptr),*/ vertexBuffer(nullptr), indexBuffer(nullptr),
 	constBufferPerObject(nullptr), strides{}, offsets{}, passThroughVS(false), colorModePS(false),
 	topologyType(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST), textureFileName(L"Textures/wood.dds")
 {
@@ -44,10 +45,10 @@ void BaseRenderComponent::Initialize()
 		ShaderMacros[macrosCount++] = { "TREAT_TEX_AS_COL", "1" };
 	}
 	
-	ID3DBlob* errorVertexCode = nullptr;
+	/*ID3DBlob* errorVertexCode = nullptr;
 	auto res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
-		ShaderMacros /*macros*/,
-		nullptr /*include*/,
+		ShaderMacros,
+		nullptr,
 		"VSMain",
 		"vs_5_0",
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
@@ -73,8 +74,8 @@ void BaseRenderComponent::Initialize()
 
 	ID3DBlob* errorPixelCode;
 	res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
-		ShaderMacros /*macros*/,
-		nullptr /*include*/,
+		ShaderMacros,
+		nullptr,
 		"PSMain",
 		"ps_5_0",
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
@@ -90,7 +91,7 @@ void BaseRenderComponent::Initialize()
 	game->Device->CreatePixelShader(
 		pixelShaderByteCode->GetBufferPointer(),
 		pixelShaderByteCode->GetBufferSize(),
-		nullptr, &pixelShader);
+		nullptr, &pixelShader);*/
 
 	constexpr D3D11_INPUT_ELEMENT_DESC inputElements[] = {
 		D3D11_INPUT_ELEMENT_DESC {
@@ -111,11 +112,17 @@ void BaseRenderComponent::Initialize()
 			0}
 	};
 
-	game->Device->CreateInputLayout(
+	/*game->Device->CreateInputLayout(
 		inputElements,
 		2,
 		vertexShaderByteCode->GetBufferPointer(),
 		vertexShaderByteCode->GetBufferSize(),
+		&layout);*/
+	game->Device->CreateInputLayout(
+		inputElements,
+		2,
+		ResourceFactory::GetVertexShaderBC("base")->GetBufferPointer(),
+		ResourceFactory::GetVertexShaderBC("base")->GetBufferSize(),
 		&layout);
 
 	D3D11_BUFFER_DESC vertexBufDesc = {};
@@ -166,9 +173,8 @@ void BaseRenderComponent::Initialize()
 
 	game->Device->CreateBuffer(&constBufPerObjDesc, nullptr, &constBufferPerObject);
 
-	res = CreateDDSTextureFromFile(game->Device.Get(), textureFileName, &diffuseTextureBuffer, &diffuseTextureView);
-
-	game->Context->GenerateMips(diffuseTextureView);
+	/*auto res = CreateDDSTextureFromFile(game->Device.Get(), textureFileName, &diffuseTextureBuffer, &diffuseTextureView);
+	game->Context->GenerateMips(diffuseTextureView);*/
 
 	D3D11_SAMPLER_DESC samplerStateDesc = {};
 	samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -178,7 +184,7 @@ void BaseRenderComponent::Initialize()
 	samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 	samplerStateDesc.MaxLOD = INT_MAX;
 	
-	res = game->Device->CreateSamplerState(&samplerStateDesc, &samplerState);
+	auto res = game->Device->CreateSamplerState(&samplerStateDesc, &samplerState);
 
 	const CD3D11_RASTERIZER_DESC rastDesc = CreateRasterizerStateDesc();
 
@@ -207,10 +213,11 @@ void BaseRenderComponent::Draw()
 	game->Context->IASetPrimitiveTopology(topologyType);
 	game->Context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	game->Context->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
-	game->Context->VSSetShader(vertexShader, nullptr, 0);
+	game->Context->VSSetShader(ResourceFactory::GetVertexShader("base"), nullptr, 0);
 	game->Context->VSSetConstantBuffers(0, 1, &constBufferPerObject);
-	game->Context->PSSetShader(pixelShader, nullptr, 0);
-	game->Context->PSSetShaderResources(0, 1, &diffuseTextureView);
+	game->Context->PSSetShader(ResourceFactory::GetPixelShader("base"), nullptr, 0);
+	ID3D11ShaderResourceView* test = ResourceFactory::GetTextureView(textureFileName);
+	game->Context->PSSetShaderResources(0, 1, &test);
 	game->Context->PSSetSamplers(0, 1, &samplerState);
 
 	game->Context->DrawIndexed(indices.size(), 0, 0);
@@ -219,11 +226,11 @@ void BaseRenderComponent::Draw()
 void BaseRenderComponent::DestroyResources()
 {
 	layout->Release();
-	pixelShader->Release();
-	pixelShaderByteCode->Release();
+	//pixelShader->Release();
+	//pixelShaderByteCode->Release();
 	rastState->Release();
-	vertexShader->Release();
-	vertexShaderByteCode->Release();
+	//vertexShader->Release();
+	//vertexShaderByteCode->Release();
 	vertexBuffer->Release();
 	indexBuffer->Release();
 }
