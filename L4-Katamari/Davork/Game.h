@@ -1,4 +1,5 @@
 #pragma once
+
 #include <vector>
 #include <wrl.h>
 #include <iostream>
@@ -6,7 +7,6 @@
 #include <d3d11.h>
 #include <directxmath.h>
 #include <chrono>
-
 #include "Camera.h"
 #include "GameComponent.h"
 #include "DisplayWin32.h"

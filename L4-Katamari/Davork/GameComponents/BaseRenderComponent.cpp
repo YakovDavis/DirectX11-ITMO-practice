@@ -4,6 +4,8 @@
 
 #pragma warning(disable : 4267)
 
+//#define CBUFFER_MAPPING
+
 using namespace DirectX;
 using namespace SimpleMath;
 
@@ -150,9 +152,14 @@ void BaseRenderComponent::Initialize()
 	offsets[0] = 0;
 
 	D3D11_BUFFER_DESC constBufPerObjDesc = {};
-	constBufPerObjDesc.Usage = D3D11_USAGE_DYNAMIC;
 	constBufPerObjDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+#ifdef CBUFFER_MAPPING
+	constBufPerObjDesc.Usage = D3D11_USAGE_DYNAMIC;
 	constBufPerObjDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+#else
+	constBufPerObjDesc.Usage = D3D11_USAGE_DEFAULT;
+	constBufPerObjDesc.CPUAccessFlags = 0;
+#endif
 	constBufPerObjDesc.MiscFlags = 0;
 	constBufPerObjDesc.StructureByteStride = 0;
 	constBufPerObjDesc.ByteWidth = sizeof(SimpleMath::Matrix);
@@ -168,6 +175,8 @@ void BaseRenderComponent::Initialize()
 	samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerStateDesc.MaxLOD = INT_MAX;
 	
 	res = game->Device->CreateSamplerState(&samplerStateDesc, &samplerState);
 
@@ -221,12 +230,16 @@ void BaseRenderComponent::DestroyResources()
 
 void BaseRenderComponent::Update()
 {
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	
+	rotation.Normalize();
 	const Matrix world = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 	const Matrix worldViewProj = (world * game->Camera->GetMatrix()).Transpose();
 
+#ifdef CBUFFER_MAPPING
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	game->Context->Map(constBufferPerObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, &worldViewProj, sizeof(worldViewProj));
 	game->Context->Unmap(constBufferPerObject, 0);
+#else
+	game->Context->UpdateSubresource(constBufferPerObject, 0, nullptr, &worldViewProj, 0 ,0);
+#endif
 }
