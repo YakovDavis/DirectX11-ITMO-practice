@@ -5,6 +5,8 @@
 
 #pragma warning(disable : 4267)
 
+//#define CBUFFER_MAPPING
+
 using namespace DirectX;
 using namespace SimpleMath;
 
@@ -23,7 +25,7 @@ CD3D11_RASTERIZER_DESC BaseRenderComponent::CreateRasterizerStateDesc()
 BaseRenderComponent::BaseRenderComponent(Game* g)
 	: GameComponent(g), layout(nullptr),/* pixelShader(nullptr), pixelShaderByteCode(nullptr), rastState(nullptr),
 	vertexShader(nullptr), vertexShaderByteCode(nullptr),*/ vertexBuffer(nullptr), indexBuffer(nullptr),
-	constBuffers(new ID3D11Buffer*[2]), strides{}, offsets{}, passThroughVS(false), colorModePS(false),
+	constBufferPerObject(nullptr), strides{}, offsets{}, passThroughVS(false), colorModePS(false),
 	topologyType(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST), textureFileName(L"Textures/wood.dds")
 {
 }
@@ -107,14 +109,6 @@ void BaseRenderComponent::Initialize()
 			0,
 			D3D11_APPEND_ALIGNED_ELEMENT,
 			D3D11_INPUT_PER_VERTEX_DATA,
-			0},
-		D3D11_INPUT_ELEMENT_DESC {
-			"NORMAL",
-			0,
-			DXGI_FORMAT_R32G32B32A32_FLOAT,
-			0,
-			D3D11_APPEND_ALIGNED_ELEMENT,
-			D3D11_INPUT_PER_VERTEX_DATA,
 			0}
 	};
 
@@ -126,7 +120,7 @@ void BaseRenderComponent::Initialize()
 		&layout);*/
 	game->Device->CreateInputLayout(
 		inputElements,
-		3,
+		2,
 		ResourceFactory::GetVertexShaderBC("base")->GetBufferPointer(),
 		ResourceFactory::GetVertexShaderBC("base")->GetBufferSize(),
 		&layout);
@@ -161,28 +155,23 @@ void BaseRenderComponent::Initialize()
 
 	game->Device->CreateBuffer(&indexBufDesc, &indexData, &indexBuffer);
 
-	strides[0] = sizeof(Vertex);
+	strides[0] = 32;
 	offsets[0] = 0;
 
 	D3D11_BUFFER_DESC constBufPerObjDesc = {};
 	constBufPerObjDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+#ifdef CBUFFER_MAPPING
+	constBufPerObjDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constBufPerObjDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+#else
 	constBufPerObjDesc.Usage = D3D11_USAGE_DEFAULT;
 	constBufPerObjDesc.CPUAccessFlags = 0;
+#endif
 	constBufPerObjDesc.MiscFlags = 0;
 	constBufPerObjDesc.StructureByteStride = 0;
-	constBufPerObjDesc.ByteWidth = sizeof(CBDataPerObject);
+	constBufPerObjDesc.ByteWidth = sizeof(SimpleMath::Matrix);
 
-	game->Device->CreateBuffer(&constBufPerObjDesc, nullptr, &constBuffers[0]);
-
-	D3D11_BUFFER_DESC constBufPerSceneDesc = {};
-	constBufPerSceneDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constBufPerSceneDesc.Usage = D3D11_USAGE_DEFAULT;
-	constBufPerSceneDesc.CPUAccessFlags = 0;
-	constBufPerSceneDesc.MiscFlags = 0;
-	constBufPerSceneDesc.StructureByteStride = 0;
-	constBufPerSceneDesc.ByteWidth = sizeof(CBDataPerScene);
-
-	game->Device->CreateBuffer(&constBufPerSceneDesc, nullptr, &constBuffers[1]);
+	game->Device->CreateBuffer(&constBufPerObjDesc, nullptr, &constBufferPerObject);
 
 	/*auto res = CreateDDSTextureFromFile(game->Device.Get(), textureFileName, &diffuseTextureBuffer, &diffuseTextureView);
 	game->Context->GenerateMips(diffuseTextureView);*/
@@ -225,8 +214,7 @@ void BaseRenderComponent::Draw()
 	game->Context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	game->Context->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
 	game->Context->VSSetShader(ResourceFactory::GetVertexShader("base"), nullptr, 0);
-	game->Context->VSSetConstantBuffers(0, 2, constBuffers);
-	game->Context->PSSetConstantBuffers(0, 2, constBuffers);
+	game->Context->VSSetConstantBuffers(0, 1, &constBufferPerObject);
 	game->Context->PSSetShader(ResourceFactory::GetPixelShader("base"), nullptr, 0);
 	ID3D11ShaderResourceView* test = ResourceFactory::GetTextureView(textureFileName);
 	game->Context->PSSetShaderResources(0, 1, &test);
@@ -251,14 +239,14 @@ void BaseRenderComponent::Update()
 {
 	rotation.Normalize();
 	const Matrix world = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
-	CBDataPerObject objData = {(world * game->Camera->GetMatrix()).Transpose()};
-	objData.invTrWorld = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert();
-	CBDataPerScene sceneData = { Vector4(1.0f, 1.0f, 1.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 0.4f),
-		Vector4(game->Camera->Position.x - game->Camera->Target.x, game->Camera->Position.y - game->Camera->Target.y,  game->Camera->Position.z - game->Camera->Target.z, 0.0f)};
-	sceneData.viewDirSpecStr.Normalize();
-	sceneData.viewDirSpecStr.w = 0.5f;
-	sceneData.lightPos.Normalize();
-	
-	game->Context->UpdateSubresource(constBuffers[0], 0, nullptr, &objData, 0, 0);
-	game->Context->UpdateSubresource(constBuffers[1], 0, nullptr, &sceneData, 0, 0);
+	const Matrix worldViewProj = world * game->Camera->GetMatrix();
+
+#ifdef CBUFFER_MAPPING
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	game->Context->Map(constBufferPerObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, &worldViewProj, sizeof(worldViewProj));
+	game->Context->Unmap(constBufferPerObject, 0);
+#else
+	game->Context->UpdateSubresource(constBufferPerObject, 0, nullptr, &worldViewProj, 0 ,0);
+#endif
 }
