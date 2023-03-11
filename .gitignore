@@ -5,7 +5,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+#*.obj
 
 # Precompiled Headers
 *.gch
@@ -38,7 +38,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+#*.obj
 
 # Precompiled Headers
 *.gch
@@ -106,7 +106,7 @@ dlldata.c
 *_p.c
 *_i.h
 *.ilk
-*.obj
+#*.obj
 *.pch
 *.pdb
 *.pgc

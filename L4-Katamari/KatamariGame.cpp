@@ -74,6 +74,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     Components.push_back(debugAnchor);*/
 
     orbitCameraController = new OrbitCameraController(this, Camera, ball);
+    orbitCameraController->isLMBActivated = false;
     
     // Camera controller binding
     InputDevice->MouseMove.AddRaw(orbitCameraController, &OrbitCameraController::OnMouseMove);
