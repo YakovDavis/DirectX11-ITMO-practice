@@ -19,9 +19,6 @@ void KatamariBall::UpdateSize(float absorbedSize)
     rotationDrag = 0.1f + 0.06f / sqrtf(tmp);
     outline->UpdateRadius(tmp);
     gameSize = tmp;
-#ifdef _DEBUG
-    std::cout << tmp << std::endl;
-#endif
 }
 
 KatamariBall::KatamariBall(Game* game) : SphereComponent(game, 1.0f, 32, 32, L"Textures/ac.dds"),

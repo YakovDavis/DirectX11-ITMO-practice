@@ -75,6 +75,18 @@
     <ClCompile Include="KatamariGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Davork\GameComponents\MeshRenderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Davork\ResourceFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameComponents\KatamariBallOutline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameComponents\KatamariFurnitureComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Davork\Camera.h">
@@ -149,11 +161,22 @@
     <ClInclude Include="KatamariGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Davork\GameComponents\MeshRenderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Davork\ResourceFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameComponents\KatamariBallOutline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameComponents\KatamariFurnitureComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Davork\SimpleMath.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>
