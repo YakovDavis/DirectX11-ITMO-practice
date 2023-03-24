@@ -5,8 +5,6 @@
 
 #pragma warning(disable : 4267)
 
-//#define CBUFFER_MAPPING
-
 using namespace DirectX;
 using namespace SimpleMath;
 
@@ -22,77 +20,15 @@ CD3D11_RASTERIZER_DESC BaseRenderComponent::CreateRasterizerStateDesc()
 	return rastDesc;
 }
 
-BaseRenderComponent::BaseRenderComponent(Game* g)
-	: GameComponent(g), layout(nullptr),/* pixelShader(nullptr), pixelShaderByteCode(nullptr), rastState(nullptr),
-	vertexShader(nullptr), vertexShaderByteCode(nullptr),*/ vertexBuffer(nullptr), indexBuffer(nullptr),
-	constBufferPerObject(nullptr), strides{}, offsets{}, passThroughVS(false), colorModePS(false),
-	topologyType(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST), textureFileName(L"Textures/wood.dds")
+BaseRenderComponent::BaseRenderComponent(Game* game)
+	: GameComponent(game), layout(nullptr), rastState(nullptr), vertexBuffer(nullptr), indexBuffer(nullptr),
+	  constBuffers(new ID3D11Buffer*[2]), strides{}, offsets{}, passThroughVS(false), colorModePS(false),
+	  topologyType(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST), textureFileName(L"Textures/wood.dds"), samplerState(nullptr)
 {
 }
 
 void BaseRenderComponent::Initialize()
 {
-	D3D_SHADER_MACRO ShaderMacros[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-
-	int macrosCount = 0;
-	if (passThroughVS)
-	{
-		ShaderMacros[macrosCount++] = { "VERTEX_PASS_THROUGH", "1" };
-	}
-
-	if (colorModePS)
-	{
-		ShaderMacros[macrosCount++] = { "TREAT_TEX_AS_COL", "1" };
-	}
-	
-	/*ID3DBlob* errorVertexCode = nullptr;
-	auto res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
-		ShaderMacros,
-		nullptr,
-		"VSMain",
-		"vs_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-		0,
-		&vertexShaderByteCode,
-		&errorVertexCode);
-
-	if (FAILED(res)) {
-		// If the shader failed to compile it should have written something to the error message.
-		if (errorVertexCode) {
-			const char* compileErrors = static_cast<char*>(errorVertexCode->GetBufferPointer());
-
-			std::cout << compileErrors << std::endl;
-		}
-		// If there was  nothing in the error message then it simply could not find the shader file itself.
-		else
-		{
-			MessageBox(game->Display->hWnd, L"Base3d.hlsl", L"Missing Shader File", MB_OK);
-		}
-
-		return;
-	}
-
-	ID3DBlob* errorPixelCode;
-	res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
-		ShaderMacros,
-		nullptr,
-		"PSMain",
-		"ps_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-		0,
-		&pixelShaderByteCode,
-		&errorPixelCode);
-
-	game->Device->CreateVertexShader(
-		vertexShaderByteCode->GetBufferPointer(),
-		vertexShaderByteCode->GetBufferSize(),
-		nullptr, &vertexShader);
-
-	game->Device->CreatePixelShader(
-		pixelShaderByteCode->GetBufferPointer(),
-		pixelShaderByteCode->GetBufferSize(),
-		nullptr, &pixelShader);*/
-
 	constexpr D3D11_INPUT_ELEMENT_DESC inputElements[] = {
 		D3D11_INPUT_ELEMENT_DESC {
 			"POSITION",
@@ -109,23 +45,25 @@ void BaseRenderComponent::Initialize()
 			0,
 			D3D11_APPEND_ALIGNED_ELEMENT,
 			D3D11_INPUT_PER_VERTEX_DATA,
+			0},
+		D3D11_INPUT_ELEMENT_DESC {
+			"NORMAL",
+			0,
+			DXGI_FORMAT_R32G32B32A32_FLOAT,
+			0,
+			D3D11_APPEND_ALIGNED_ELEMENT,
+			D3D11_INPUT_PER_VERTEX_DATA,
 			0}
 	};
-
-	/*game->Device->CreateInputLayout(
-		inputElements,
-		2,
-		vertexShaderByteCode->GetBufferPointer(),
-		vertexShaderByteCode->GetBufferSize(),
-		&layout);*/
+	
 	game->Device->CreateInputLayout(
 		inputElements,
-		2,
+		3,
 		ResourceFactory::GetVertexShaderBC("base")->GetBufferPointer(),
 		ResourceFactory::GetVertexShaderBC("base")->GetBufferSize(),
 		&layout);
 
-	D3D11_BUFFER_DESC vertexBufDesc = {};
+	D3D11_BUFFER_DESC vertexBufDesc;
 	vertexBufDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufDesc.CPUAccessFlags = 0;
@@ -133,14 +71,14 @@ void BaseRenderComponent::Initialize()
 	vertexBufDesc.StructureByteStride = 0;
 	vertexBufDesc.ByteWidth = sizeof(Vertex) * std::size(points);
 
-	D3D11_SUBRESOURCE_DATA vertexData = {};
+	D3D11_SUBRESOURCE_DATA vertexData;
 	vertexData.pSysMem = points.data();
 	vertexData.SysMemPitch = 0;
 	vertexData.SysMemSlicePitch = 0;
 
 	game->Device->CreateBuffer(&vertexBufDesc, &vertexData, &vertexBuffer);
 	
-	D3D11_BUFFER_DESC indexBufDesc = {};
+	D3D11_BUFFER_DESC indexBufDesc;
 	indexBufDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufDesc.CPUAccessFlags = 0;
@@ -148,33 +86,35 @@ void BaseRenderComponent::Initialize()
 	indexBufDesc.StructureByteStride = 0;
 	indexBufDesc.ByteWidth = sizeof(UINT) * std::size(indices);
 
-	D3D11_SUBRESOURCE_DATA indexData = {};
+	D3D11_SUBRESOURCE_DATA indexData;
 	indexData.pSysMem = indices.data();
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
 	game->Device->CreateBuffer(&indexBufDesc, &indexData, &indexBuffer);
 
-	strides[0] = 32;
+	strides[0] = sizeof(Vertex);
 	offsets[0] = 0;
 
-	D3D11_BUFFER_DESC constBufPerObjDesc = {};
+	D3D11_BUFFER_DESC constBufPerObjDesc;
 	constBufPerObjDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-#ifdef CBUFFER_MAPPING
-	constBufPerObjDesc.Usage = D3D11_USAGE_DYNAMIC;
-	constBufPerObjDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-#else
 	constBufPerObjDesc.Usage = D3D11_USAGE_DEFAULT;
 	constBufPerObjDesc.CPUAccessFlags = 0;
-#endif
 	constBufPerObjDesc.MiscFlags = 0;
 	constBufPerObjDesc.StructureByteStride = 0;
-	constBufPerObjDesc.ByteWidth = sizeof(SimpleMath::Matrix);
+	constBufPerObjDesc.ByteWidth = sizeof(CBDataPerObject);
 
-	game->Device->CreateBuffer(&constBufPerObjDesc, nullptr, &constBufferPerObject);
+	game->Device->CreateBuffer(&constBufPerObjDesc, nullptr, &constBuffers[0]);
 
-	/*auto res = CreateDDSTextureFromFile(game->Device.Get(), textureFileName, &diffuseTextureBuffer, &diffuseTextureView);
-	game->Context->GenerateMips(diffuseTextureView);*/
+	D3D11_BUFFER_DESC constBufPerSceneDesc;
+	constBufPerSceneDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constBufPerSceneDesc.Usage = D3D11_USAGE_DEFAULT;
+	constBufPerSceneDesc.CPUAccessFlags = 0;
+	constBufPerSceneDesc.MiscFlags = 0;
+	constBufPerSceneDesc.StructureByteStride = 0;
+	constBufPerSceneDesc.ByteWidth = sizeof(CBDataPerScene);
+
+	game->Device->CreateBuffer(&constBufPerSceneDesc, nullptr, &constBuffers[1]);
 
 	D3D11_SAMPLER_DESC samplerStateDesc = {};
 	samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -200,7 +140,7 @@ void BaseRenderComponent::Draw()
 {
 	game->Context->RSSetState(rastState);
 
-	D3D11_VIEWPORT viewport = {};
+	D3D11_VIEWPORT viewport;
 	viewport.Width = static_cast<float>(game->Display->ClientWidth);
 	viewport.Height = static_cast<float>(game->Display->ClientHeight);
 	viewport.TopLeftX = 0;
@@ -215,7 +155,8 @@ void BaseRenderComponent::Draw()
 	game->Context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	game->Context->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
 	game->Context->VSSetShader(ResourceFactory::GetVertexShader("base"), nullptr, 0);
-	game->Context->VSSetConstantBuffers(0, 1, &constBufferPerObject);
+	game->Context->VSSetConstantBuffers(0, 2, constBuffers);
+	game->Context->PSSetConstantBuffers(0, 2, constBuffers);
 	game->Context->PSSetShader(ResourceFactory::GetPixelShader("base"), nullptr, 0);
 	ID3D11ShaderResourceView* test = ResourceFactory::GetTextureView(textureFileName);
 	game->Context->PSSetShaderResources(0, 1, &test);
@@ -227,11 +168,7 @@ void BaseRenderComponent::Draw()
 void BaseRenderComponent::DestroyResources()
 {
 	layout->Release();
-	//pixelShader->Release();
-	//pixelShaderByteCode->Release();
 	rastState->Release();
-	//vertexShader->Release();
-	//vertexShaderByteCode->Release();
 	vertexBuffer->Release();
 	indexBuffer->Release();
 }
