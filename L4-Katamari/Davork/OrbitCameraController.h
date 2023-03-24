@@ -18,8 +18,8 @@ protected:
     float radius;
     float sensitivityX;
     float sensitivityY;
-    bool isLMBActivated;
 public:
+    bool isLMBActivated;
     OrbitCameraController(Game* g, Camera* c, GameComponent* t);
     void OnMouseMove(const InputDevice::MouseMoveEventArgs& args);
     void Update();

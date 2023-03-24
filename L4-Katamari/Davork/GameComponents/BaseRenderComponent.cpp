@@ -182,7 +182,8 @@ void BaseRenderComponent::Initialize()
 	samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerStateDesc.MaxLOD = INT_MAX;
+	samplerStateDesc.MinLOD = 0.0f;
+	samplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	
 	auto res = game->Device->CreateSamplerState(&samplerStateDesc, &samplerState);
 
@@ -239,14 +240,19 @@ void BaseRenderComponent::Update()
 {
 	rotation.Normalize();
 	const Matrix world = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
-	const Matrix worldViewProj = world * game->Camera->GetMatrix();
-
-#ifdef CBUFFER_MAPPING
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	game->Context->Map(constBufferPerObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	memcpy(mappedResource.pData, &worldViewProj, sizeof(worldViewProj));
-	game->Context->Unmap(constBufferPerObject, 0);
-#else
-	game->Context->UpdateSubresource(constBufferPerObject, 0, nullptr, &worldViewProj, 0 ,0);
-#endif
+	
+	CBDataPerObject objData = {};
+	objData.worldViewProj = world * game->Camera->GetMatrix();
+	objData.invTrWorld = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose();
+	
+	CBDataPerScene sceneData = {};
+	sceneData.lightPos = Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+	sceneData.lightColorAmbStr = Vector4(1.0f, 1.0f, 1.0f, 0.4f);
+	sceneData.viewDirSpecStr = Vector4(game->Camera->Position.x - game->Camera->Target.x, game->Camera->Position.y - game->Camera->Target.y,  game->Camera->Position.z - game->Camera->Target.z, 0.0f);
+	sceneData.viewDirSpecStr.Normalize();
+	sceneData.viewDirSpecStr.w = 0.5f;
+	sceneData.lightPos.Normalize();
+	
+	game->Context->UpdateSubresource(constBuffers[0], 0, nullptr, &objData, 0, 0);
+	game->Context->UpdateSubresource(constBuffers[1], 0, nullptr, &sceneData, 0, 0);
 }
