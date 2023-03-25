@@ -8,5 +8,6 @@ protected:
     float initialRadius;
 public:
     KatamariBallOutline(Game* g, float radius, int sliceCount, int stackCount, const wchar_t* diffuseTextureName);
+    ~KatamariBallOutline() override = default;
     void UpdateRadius(float radius);
 };

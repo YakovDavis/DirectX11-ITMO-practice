@@ -18,6 +18,7 @@ public:
     bool isPickedUp;
     KatamariBall* kb;
     MeshRenderComponent(Game* g, std::string fileNameModel, const wchar_t* fileNameTexture);
+    ~MeshRenderComponent() override = default;
     void Initialize() override;
     void SetPosition(DirectX::SimpleMath::Vector3 p) override { position = p; }
     void SetRotation(DirectX::SimpleMath::Quaternion q) override { rotation = q; }

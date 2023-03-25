@@ -61,16 +61,16 @@ void KatamariBall::Update()
         }
     }
     
-    savedRot.RotateTowards(Quaternion::Identity, rotationDrag * game->DeltaTime);
+    savedRot.RotateTowards(Quaternion::Identity, rotationDrag * game->DeltaTime());
     rotation *= savedRot;
-    velocity *= 1.0f - moveDrag * game->DeltaTime;
+    velocity *= 1.0f - moveDrag * game->DeltaTime();
 
     outline->SetRotation(rotation);
 
     outline->Update();
     SphereComponent::Update();
 
-    position += velocity * game->DeltaTime;
+    position += velocity * game->DeltaTime();
     outline->SetPosition(position);
 }
 

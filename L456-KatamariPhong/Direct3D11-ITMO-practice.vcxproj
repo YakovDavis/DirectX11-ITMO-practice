@@ -283,7 +283,6 @@
     <ClCompile Include="Davork\GameComponents\SphereComponent.cpp" />
     <ClCompile Include="Davork\OrbitCameraController.cpp" />
     <ClCompile Include="Davork\ResourceFactory.cpp" />
-    <ClCompile Include="Davork\Vertex.cpp" />
     <ClCompile Include="Davork\Delegates.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

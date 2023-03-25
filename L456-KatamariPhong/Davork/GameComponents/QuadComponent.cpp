@@ -13,12 +13,12 @@ CD3D11_RASTERIZER_DESC QuadComponent::CreateRasterizerStateDesc()
 
 QuadComponent::QuadComponent(Game* g, const wchar_t* diffuseTextureName) : BaseRenderComponent(g)
 {
-	textureFileName = diffuseTextureName;
+	textureFileName_ = diffuseTextureName;
 	
-	points.push_back( { Vector4(0.5f, 0.5f, 0.0f, 1.0f),	Vector4(64.0f, 64.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
-	points.push_back( { Vector4(-0.5f, -0.5f, 0.0f, 1.0f),Vector4(0.0f, 0.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
-	points.push_back( { Vector4(0.5f, -0.5f, 0.0f, 1.0f), Vector4(0.0f, 64.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
-	points.push_back( { Vector4(-0.5f, 0.5f, 0.0f, 1.0f), Vector4(64.0f, 0.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
+	points_.push_back( { Vector4(0.5f, 0.5f, 0.0f, 1.0f),	Vector4(64.0f, 64.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
+	points_.push_back( { Vector4(-0.5f, -0.5f, 0.0f, 1.0f),Vector4(0.0f, 0.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
+	points_.push_back( { Vector4(0.5f, -0.5f, 0.0f, 1.0f), Vector4(0.0f, 64.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
+	points_.push_back( { Vector4(-0.5f, 0.5f, 0.0f, 1.0f), Vector4(64.0f, 0.0f, 0.0f, 0.0f),	Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
 
-	indices = { 0,1,2, 1,0,3 };
+	indices_ = { 0,1,2, 1,0,3 };
 }

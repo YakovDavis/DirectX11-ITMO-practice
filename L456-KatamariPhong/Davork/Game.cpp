@@ -8,7 +8,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 
 	if (umessage == WM_NCCREATE)
 	{
-		pThis = static_cast<Game*>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams);
+		pThis = static_cast<Game*>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams);  // NOLINT(performance-no-int-to-ptr)
 
 		SetLastError(0);
 		if (!SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis)))
@@ -19,7 +19,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 	}
 	else
 	{
-		pThis = reinterpret_cast<Game*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+		pThis = reinterpret_cast<Game*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));  // NOLINT(performance-no-int-to-ptr)
 	}
 	
 	switch (umessage)
@@ -32,30 +32,22 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 	case WM_INPUT:
 		{
 			UINT dwSize = 0;
-			GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
-			LPBYTE lpb = new BYTE[dwSize];
+			GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));  // NOLINT(performance-no-int-to-ptr)
+			const auto lpb = new BYTE[dwSize];
 			if (lpb == nullptr) {
 				return 0;
 			}
 			
-			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)  // NOLINT(performance-no-int-to-ptr)
 				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
 
-			auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
+			const auto* raw = reinterpret_cast<RAWINPUT*>(lpb);
 
 			if (pThis)
 			{
 				if (raw->header.dwType == RIM_TYPEKEYBOARD)
 				{
-					//printf(" Kbd: make=%04i Flags:%04i Reserved:%04i ExtraInformation:%08i, msg=%04i VK=%i \n",
-					//	raw->data.keyboard.MakeCode,
-					//	raw->data.keyboard.Flags,
-					//	raw->data.keyboard.Reserved,
-					//	raw->data.keyboard.ExtraInformation,
-					//	raw->data.keyboard.Message,
-					//	raw->data.keyboard.VKey);
-
-					pThis->InputDevice->OnKeyDown({
+					pThis->inputDevice_->OnKeyDown({
 						raw->data.keyboard.MakeCode,
 						raw->data.keyboard.Flags,
 						raw->data.keyboard.VKey,
@@ -64,8 +56,7 @@ LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM l
 				}
 				else if (raw->header.dwType == RIM_TYPEMOUSE)
 				{
-					//printf(" Mouse: X=%04d Y:%04d \n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
-					pThis->InputDevice->OnMouseMove({
+					pThis->inputDevice_->OnMouseMove({
 						raw->data.mouse.usFlags,
 						raw->data.mouse.usButtonFlags,
 						static_cast<int>(raw->data.mouse.ulExtraInformation),
@@ -91,48 +82,67 @@ void Game::CreateDepthStencilBuffer()
 {
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 	
-	depthStencilDesc.Width     = Display->ClientWidth;
-	depthStencilDesc.Height    = Display->ClientHeight;
+	depthStencilDesc.Width = display_->ClientWidth;
+	depthStencilDesc.Height = display_->ClientHeight;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count   = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
 	depthStencilDesc.SampleDesc.Quality = 0;
-	depthStencilDesc.Usage          = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags      = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthStencilDesc.CPUAccessFlags = 0; 
-	depthStencilDesc.MiscFlags      = 0;
+	depthStencilDesc.MiscFlags = 0;
 
-	HRESULT res = Device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
+	HRESULT res = device_->CreateTexture2D(&depthStencilDesc, nullptr, depthStencilBuffer_.GetAddressOf());
+
+	if (FAILED(res))
+	{
+		OutputDebugString(TEXT("Fatal error: Failed to create depth stencil buffer!\n"));
+	}
 	
-	res = Device->CreateDepthStencilView(depthStencilBuffer, nullptr, &depthStencilView);
+	res = device_->CreateDepthStencilView(depthStencilBuffer_.Get(), nullptr, depthStencilView_.GetAddressOf());
+
+	if (FAILED(res))
+	{
+		OutputDebugString(TEXT("Fatal error: Failed to create depth stencil view!\n"));
+	}
 }
 
 void Game::CreateBackBuffer()
 {
-	auto res = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
-	res = Device->CreateRenderTargetView(backBuffer, nullptr, &RenderView);
-}
+	auto res = swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer_.GetAddressOf()));
 
-Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested(false), Name(name), FrameCount(0)
-{
-	Instance = GetModuleHandle(nullptr);
-
-	Display = new DisplayWin32(name, Instance, screenWidth, screenHeight, this);
-	InputDevice = new ::InputDevice(this);
-
-	Camera = new ::Camera();
-	Camera->AspectRatio = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
-}
-
-Game::~Game()
-{
-	for (auto c : Components)
+	if (FAILED(res))
 	{
-		delete c;
+		OutputDebugString(TEXT("Fatal error: Failed to create back buffer!\n"));
 	}
-	delete Display;
-	delete InputDevice;
+	
+	res = device_->CreateRenderTargetView(backBuffer_.Get(), nullptr, renderView_.GetAddressOf());
+
+	if (FAILED(res))
+	{
+		OutputDebugString(TEXT("Fatal error: Failed to create RTV!\n"));
+	}
+}
+
+Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested_(false), name_(name), frameCount_(0)
+{
+	instance_ = GetModuleHandle(nullptr);
+
+	display_ = std::make_shared<DisplayWin32>(name, instance_, screenWidth, screenHeight, this);
+	inputDevice_ = std::make_shared<InputDevice>(this);
+
+	camera_ = std::make_shared<Camera>();
+	camera_->AspectRatio = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
+}
+
+Game::~Game()  // NOLINT(modernize-use-equals-default)
+{
+	for (const auto c : components_)
+	{
+		c->~GameComponent();
+	}
 }
 
 void Game::Exit()
@@ -150,7 +160,7 @@ void Game::MessageHandler()
 	}
 
 	if (msg.message == WM_QUIT)
-		isExitRequested = true;
+		isExitRequested_ = true;
 }
 
 void Game::RestoreTargets()
@@ -159,29 +169,29 @@ void Game::RestoreTargets()
 
 void Game::InitTimer()
 {
-	PrevTime = std::chrono::steady_clock::now();
+	prevTime_ = std::chrono::steady_clock::now();
 }
 
 void Game::UpdateTimer()
 {
-	auto	curTime = std::chrono::steady_clock::now();
-	DeltaTime = std::chrono::duration_cast<std::chrono::microseconds>(curTime - PrevTime).count() / 1000000.0f;
-	PrevTime = curTime;
+	const auto curTime = std::chrono::steady_clock::now();
+	deltaTime_ = std::chrono::duration_cast<std::chrono::microseconds>(curTime - prevTime_).count() / 1000000.0f;
+	prevTime_ = curTime;
 
-	TotalTime += DeltaTime;
-	FrameCount++;
+	totalTime_ += deltaTime_;
+	frameCount_++;
 
-	if (TotalTime > 1.0f)
+	if (totalTime_ > 1.0f)
 	{
-		float fps = static_cast<float>(FrameCount) / TotalTime;
+		const float fps = static_cast<float>(frameCount_) / totalTime_;
 
-		TotalTime -= 1.0f;
+		totalTime_ -= 1.0f;
 
 		WCHAR text[256];
 		swprintf_s(text, TEXT("FPS: %f"), fps);
-		SetWindowText(Display->hWnd, text);
+		SetWindowText(display_->hWnd, text);
 
-		FrameCount = 0;
+		frameCount_ = 0;
 	}
 }
 
@@ -190,7 +200,7 @@ void Game::Run()
 	PrepareResources();
 	Initialize();
 	InitTimer();
-	while (!isExitRequested)
+	while (!isExitRequested_)
 	{
 		MessageHandler();
 
@@ -209,24 +219,43 @@ void Game::Run()
 	Exit();
 }
 
+ID3D11Device* Game::GetDevice() const
+{
+	return device_.Get();
+}
+
+ID3D11DeviceContext* Game::GetContext() const
+{
+	return context_.Get();
+}
+
+InputDevice* Game::GetInputDevice() const
+{
+	return inputDevice_.get();
+}
+
+Camera* Game::GetCamera() const
+{
+	return camera_.get();
+}
+
+DisplayWin32* Game::GetDisplay() const
+{
+	return display_.get();
+}
+
 void Game::DestroyResources()
 {
-	for (auto c : Components)
+	for (const auto c : components_)
 	{
 		c->DestroyResources();
 	}
-	
-	Context->Release();
-	backBuffer->Release();
-	RenderView->Release();
-	SwapChain->Release();
-	depthStencilView->Release();
-	depthStencilBuffer->Release();
+	ResourceFactory::DestroyResources();
 }
 
 void Game::Draw()
 {
-	for (auto c : Components)
+	for (const auto c : components_)
 	{
 		c->Draw();
 	}
@@ -234,14 +263,14 @@ void Game::Draw()
 
 void Game::EndFrame()
 {
-	Context->OMSetRenderTargets(0, nullptr, nullptr);
+	context_->OMSetRenderTargets(0, nullptr, nullptr);
 
-	SwapChain->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
+	swapChain_->Present(1, /*DXGI_PRESENT_DO_NOT_WAIT*/ 0);
 }
 
 void Game::Initialize()
 {
-	for (auto c : Components)
+	for (const auto c : components_)
 	{
 		c->Initialize();
 	}
@@ -249,30 +278,30 @@ void Game::Initialize()
 
 void Game::PrepareFrame()
 {
-	Context->ClearState();
+	context_->ClearState();
 
-	Context->OMSetRenderTargets(1, &RenderView, depthStencilView);
+	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), depthStencilView_.Get());
 
 	constexpr float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	Context->ClearRenderTargetView(RenderView, color);
-	Context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0);
+	context_->ClearRenderTargetView(renderView_.Get(), color);
+	context_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void Game::PrepareResources()
 {
-	D3D_FEATURE_LEVEL featureLevel[] = { D3D_FEATURE_LEVEL_11_1 };
+	constexpr D3D_FEATURE_LEVEL featureLevel[] = { D3D_FEATURE_LEVEL_11_1 };
 
-	DXGI_SWAP_CHAIN_DESC swapDesc = {};
+	DXGI_SWAP_CHAIN_DESC swapDesc;
 	swapDesc.BufferCount = 2;
-	swapDesc.BufferDesc.Width = Display->ClientWidth;
-	swapDesc.BufferDesc.Height = Display->ClientHeight;
+	swapDesc.BufferDesc.Width = display_->ClientWidth;
+	swapDesc.BufferDesc.Height = display_->ClientHeight;
 	swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapDesc.BufferDesc.RefreshRate.Numerator = 60;
 	swapDesc.BufferDesc.RefreshRate.Denominator = 1;
 	swapDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	swapDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapDesc.OutputWindow = Display->hWnd;
+	swapDesc.OutputWindow = display_->hWnd;
 	swapDesc.Windowed = true;
 	swapDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -288,14 +317,14 @@ void Game::PrepareResources()
 		1,
 		D3D11_SDK_VERSION,
 		&swapDesc,
-		&SwapChain,
-		&Device,
+		swapChain_.GetAddressOf(),
+		device_.GetAddressOf(),
 		nullptr,
-		&Context);
+		context_.GetAddressOf());
 
 	if (FAILED(res))
 	{
-		// Well, that was unexpected
+		OutputDebugString(TEXT("Fatal error: Failed to create device and/or swap chain!\n"));
 	}
 
 	CreateBackBuffer();
@@ -307,8 +336,8 @@ void Game::PrepareResources()
 
 void Game::Update()
 {
-	Camera->UpdateMatrix();
-	for (auto c : Components)
+	camera_->UpdateMatrix();
+	for (const auto c : components_)
 	{
 		c->Update();
 	}

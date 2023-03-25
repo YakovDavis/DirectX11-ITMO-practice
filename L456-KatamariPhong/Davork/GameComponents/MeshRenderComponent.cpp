@@ -8,13 +8,13 @@ using namespace SimpleMath;
 MeshRenderComponent::MeshRenderComponent(Game* g, const std::string fileNameModel, const wchar_t* fileNameTexture) :
     BaseRenderComponent(g), fNameModel(fileNameModel), isPickedUp(false)
 {
-    textureFileName = fileNameTexture;
+    textureFileName_ = fileNameTexture;
 }
 
 void MeshRenderComponent::Initialize()
 {
-    points = ResourceFactory::GetPoints(fNameModel);
-    indices = ResourceFactory::GetIndices(fNameModel);
+    points_ = ResourceFactory::GetPoints(fNameModel);
+    indices_ = ResourceFactory::GetIndices(fNameModel);
     
     BaseRenderComponent::Initialize();
 }

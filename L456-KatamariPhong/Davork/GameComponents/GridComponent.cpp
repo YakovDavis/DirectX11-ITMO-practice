@@ -13,19 +13,19 @@ GridComponent::GridComponent(Game* g, float cellSize, int lineCount)
 	int k = 0;
 	for (int i = 0 - lineCount / 2; i < lineCount / 2; ++i)
 	{
-		points.push_back(Vertex( {Vector4(static_cast<float>(i), 0.0f, - cellSize * lineCount / 2, 1.0f), i % 5 == 0 ? boldColor : color} ) );
-		indices.push_back(k++);
-		points.push_back(Vertex( {Vector4(static_cast<float>(i), 0.0f, cellSize * lineCount / 2, 1.0f), i % 5 == 0 ? boldColor : color} ) );
-		indices.push_back(k++);
+		points_.push_back(Vertex( {Vector4(static_cast<float>(i), 0.0f, - cellSize * lineCount / 2, 1.0f), i % 5 == 0 ? boldColor : color} ) );
+		indices_.push_back(k++);
+		points_.push_back(Vertex( {Vector4(static_cast<float>(i), 0.0f, cellSize * lineCount / 2, 1.0f), i % 5 == 0 ? boldColor : color} ) );
+		indices_.push_back(k++);
 	}
 	for (int i = 0 - lineCount / 2; i < lineCount / 2; ++i)
 	{
-		points.push_back(Vertex( {Vector4(- cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), i % 5 == 0 ? boldColor : color} ) );
-		indices.push_back(k++);
-		points.push_back(Vertex( {Vector4(cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), i % 5 == 0 ? boldColor : color} ) );
-		indices.push_back(k++);
+		points_.push_back(Vertex( {Vector4(- cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), i % 5 == 0 ? boldColor : color} ) );
+		indices_.push_back(k++);
+		points_.push_back(Vertex( {Vector4(cellSize * lineCount / 2, 0.0f, static_cast<float>(i), 1.0f), i % 5 == 0 ? boldColor : color} ) );
+		indices_.push_back(k++);
 	}
 	
-	colorModePS = true;
-	topologyType = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+	colorModePs_ = true;
+	topologyType_ = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 }

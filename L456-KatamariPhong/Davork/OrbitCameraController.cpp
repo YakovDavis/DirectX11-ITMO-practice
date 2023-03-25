@@ -11,17 +11,18 @@ OrbitCameraController::OrbitCameraController(Game* g, Camera* c, GameComponent* 
 
 void OrbitCameraController::OnMouseMove(const InputDevice::MouseMoveEventArgs& args)
 {
-    if (game->InputDevice->IsKeyDown(Keys::LeftButton) || !isLMBActivated)
+    if (game->GetInputDevice()->IsKeyDown(Keys::LeftButton) || !isLMBActivated)
     {
-        Vector3 tmp = Vector3::Transform(Vector3::Right, rotation);
-        if ((GetForward().y < 0 || game->InputDevice->MouseOffset.y < 0) && (GetUp().y > 0.05f || game->InputDevice->MouseOffset.y > 0))
-            rotation *= Quaternion::CreateFromAxisAngle(tmp, sensitivityY * game->InputDevice->MouseOffset.y);
-        rotation *= Quaternion::CreateFromAxisAngle(Vector3::Up, - sensitivityX * game->InputDevice->MouseOffset.x);
+        const Vector3 tmp = Vector3::Transform(Vector3::Right, rotation);
+        if ((GetForward().y < 0 || game->GetInputDevice()->MouseOffset.y < 0) && (GetUp().y > 0.05f || game->GetInputDevice()->MouseOffset.y > 0))
+            rotation *= Quaternion::CreateFromAxisAngle(tmp, sensitivityY * game->GetInputDevice()->MouseOffset.y);
+        rotation *= Quaternion::CreateFromAxisAngle(Vector3::Up, - sensitivityX * game->GetInputDevice()->MouseOffset.x);
     }
-    if ((radius > 5.0 || game->InputDevice->MouseWheelDelta < 0) && (radius < 30.0 || game->InputDevice->MouseWheelDelta > 0))
-        radius -= 0.01f * game->InputDevice->MouseWheelDelta;
+    if ((radius > 5.0 || game->GetInputDevice()->MouseWheelDelta < 0) && (radius < 30.0 || game->GetInputDevice()->MouseWheelDelta > 0))
+        radius -= 0.01f * static_cast<float>(game->GetInputDevice()->MouseWheelDelta);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void OrbitCameraController::Update()
 {
     camera->Position = target->GetPosition() - GetForward() * radius;

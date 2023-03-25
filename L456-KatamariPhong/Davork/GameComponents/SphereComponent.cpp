@@ -7,12 +7,12 @@ using namespace SimpleMath;
 SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stackCount, const wchar_t* diffuseTextureName)
 	: BaseRenderComponent(g)
 {
-	textureFileName = diffuseTextureName;
+	textureFileName_ = diffuseTextureName;
 	
 	Vertex topPoint( {Vector4(0.0f, radius, 0.0f, 1.0f), Vector4(0.0f, 0.0f, 0.0f, 0.0f), Vector4(0.0f, 1.0f, 0.0f, 0.0f) } );
 	Vertex bottomPoint( {Vector4(0.0f, -radius, 0.0f, 1.0f), Vector4(0.0f, 1.0f, 0.0f, 0.0f), Vector4(0.0f, -1.0f, 0.0f, 0.0f) } );
 
-	points.push_back(topPoint);
+	points_.push_back(topPoint);
 
 	const float phiStep   = XM_PI / static_cast<float>(stackCount);
 	const float thetaStep = XM_2PI / static_cast<float>(sliceCount);
@@ -34,17 +34,17 @@ SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stac
         	p.normal = p.pos;
         	p.normal.w = 0.0f;
         	p.normal.Normalize();
-			points.push_back(p);
+			points_.push_back(p);
 		}
 	}
 	
-	points.push_back(bottomPoint);
+	points_.push_back(bottomPoint);
 
     for(int i = 1; i <= sliceCount; ++i)
 	{
-		indices.push_back(0);
-		indices.push_back(i + 1);
-		indices.push_back(i);
+		indices_.push_back(0);
+		indices_.push_back(i + 1);
+		indices_.push_back(i);
 	}
 	
     int baseIndex = 1;
@@ -53,24 +53,24 @@ SphereComponent::SphereComponent(Game* g, float radius, int sliceCount, int stac
 	{
 		for(int j = 0; j < sliceCount; ++j)
 		{
-			indices.push_back(baseIndex + i*ringVertexCount + j);
-			indices.push_back(baseIndex + i*ringVertexCount + j + 1);
-			indices.push_back(baseIndex + (i+1)*ringVertexCount + j);
+			indices_.push_back(baseIndex + i*ringVertexCount + j);
+			indices_.push_back(baseIndex + i*ringVertexCount + j + 1);
+			indices_.push_back(baseIndex + (i+1)*ringVertexCount + j);
 
-			indices.push_back(baseIndex + (i+1)*ringVertexCount + j);
-			indices.push_back(baseIndex + i*ringVertexCount + j + 1);
-			indices.push_back(baseIndex + (i+1)*ringVertexCount + j + 1);
+			indices_.push_back(baseIndex + (i+1)*ringVertexCount + j);
+			indices_.push_back(baseIndex + i*ringVertexCount + j + 1);
+			indices_.push_back(baseIndex + (i+1)*ringVertexCount + j + 1);
 		}
 	}
 	
-	const int southPoleIndex = points.size() - 1;
+	const int southPoleIndex = points_.size() - 1;
 	
 	baseIndex = southPoleIndex - ringVertexCount;
 	
 	for(int i = 0; i < sliceCount; ++i)
 	{
-		indices.push_back(southPoleIndex);
-		indices.push_back(baseIndex + i);
-		indices.push_back(baseIndex + i + 1);
+		indices_.push_back(southPoleIndex);
+		indices_.push_back(baseIndex + i);
+		indices_.push_back(baseIndex + i + 1);
 	}
 }

@@ -11,60 +11,60 @@ FPSCameraController::FPSCameraController(Game* g, Camera* c) : game(g), camera(c
 
 void FPSCameraController::OnMouseMove(const InputDevice::MouseMoveEventArgs& args)
 {
-    if (game->InputDevice->IsKeyDown(Keys::LeftButton) || !isLMBActivated)
+    if (game->GetInputDevice()->IsKeyDown(Keys::LeftButton) || !isLMBActivated)
     {
-        yaw -= sensitivityX * game->InputDevice->MouseOffset.x;
+        yaw -= sensitivityX * game->GetInputDevice()->MouseOffset.x;
         while (yaw < -XM_2PI)
             yaw += XM_2PI;
         while (yaw > XM_2PI)
             yaw -= XM_2PI;
-        pitch -= sensitivityY * game->InputDevice->MouseOffset.y;
+        pitch -= sensitivityY * game->GetInputDevice()->MouseOffset.y;
         while (pitch < -XM_2PI)
             pitch += XM_2PI;
         while (pitch > XM_2PI)
             pitch -= XM_2PI;
         camera->Up = XMVector4Transform(Vector3::Up, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
-        camera->Target = game->Camera->Position;
+        camera->Target = game->GetCamera()->Position;
         camera->Target += XMVector4Transform(Vector3::Forward, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
     }
 }
 
 void FPSCameraController::Update()
 {
-    if (game->InputDevice->IsKeyDown(Keys::W))
+    if (game->GetInputDevice()->IsKeyDown(Keys::W))
     {
         Vector3 tmp = XMVector4Transform(Vector3::Forward, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
         tmp.Normalize();
         camera->Position += speed * tmp;
     }
-    if (game->InputDevice->IsKeyDown(Keys::S))
+    if (game->GetInputDevice()->IsKeyDown(Keys::S))
     {
         Vector3 tmp = XMVector4Transform(Vector3::Backward, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
         tmp.Normalize();
         camera->Position += speed * tmp;
     }
-    if (game->InputDevice->IsKeyDown(Keys::A))
+    if (game->GetInputDevice()->IsKeyDown(Keys::A))
     {
         Vector3 tmp = XMVector4Transform(Vector3::Left, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
         tmp.Normalize();
         camera->Position += speed * tmp;
     }
-    if (game->InputDevice->IsKeyDown(Keys::D))
+    if (game->GetInputDevice()->IsKeyDown(Keys::D))
     {
         Vector3 tmp = XMVector4Transform(Vector3::Right, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
         tmp.Normalize();
         camera->Position += speed * tmp;
     }
-    if (game->InputDevice->IsKeyDown(Keys::E))
+    if (game->GetInputDevice()->IsKeyDown(Keys::E))
     {
         camera->Position += speed * Vector3::Up;
     }
-    if (game->InputDevice->IsKeyDown(Keys::Z))
+    if (game->GetInputDevice()->IsKeyDown(Keys::Z))
     {
         camera->Position += speed * Vector3::Down;
     }
     camera->Up = XMVector4Transform(Vector3::Up, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
-    camera->Target = game->Camera->Position;
+    camera->Target = game->GetCamera()->Position;
     camera->Target += XMVector4Transform(Vector3::Forward, Matrix::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
 }
 

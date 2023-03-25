@@ -15,19 +15,19 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
 
     ball = new KatamariBall(this);
     ball->SetPosition(Vector3(0.0f, 1.0f, 0.0f));
-    Components.push_back(ball);
+    components_.push_back(ball);
 
     QuadComponent* quad = new QuadComponent(this, L"Textures/wood.dds");
     quad->SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Right, XM_PI / 2.0f));
     quad->SetScale(Vector3::One * 1000.0f);
-    Components.push_back(quad);
+    components_.push_back(quad);
 
     for (int i = 0; i < 10; ++i)
     {
         KatamariFurnitureComponent* stool = new KatamariFurnitureComponent(this, "Models/stool.obj", L"Textures/stool.dds", 1.5f, Vector3(0.0f, 0.8f, 0.0f));
         stool->SetPosition(Vector3(static_cast<float>(rand()) / RAND_MAX * 100.0f - 50.0f, 0.0f, static_cast<float>(rand()) / RAND_MAX  * 100.0f - 50.0f));
         stool->collision.Radius = 0.8f;
-        Components.push_back(stool);
+        components_.push_back(stool);
         furniture.push_back(stool);
     }
 
@@ -37,7 +37,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
         strawberry->SetScale(Vector3(0.1f, 0.1f, 0.1f));
         strawberry->SetPosition(Vector3(static_cast<float>(rand()) / RAND_MAX * 100.0f - 50.0f, 0.0f, static_cast<float>(rand()) / RAND_MAX  * 100.0f - 50.0f));
         strawberry->collision.Radius = 0.1f;
-        Components.push_back(strawberry);
+        components_.push_back(strawberry);
         furniture.push_back(strawberry);
     }
 
@@ -47,7 +47,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
         duck->SetScale(Vector3(0.02f, 0.02f, 0.02f));
         duck->SetPosition(Vector3(static_cast<float>(rand()) / RAND_MAX * 100.0f - 50.0f, 0.0f, static_cast<float>(rand()) / RAND_MAX  * 100.0f - 50.0f));
         duck->collision.Radius = 0.2f;
-        Components.push_back(duck);
+        components_.push_back(duck);
         furniture.push_back(duck);
     }
 
@@ -55,7 +55,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     sofa->SetScale(Vector3(7.0f, 7.0f, 7.0f));
     sofa->SetPosition(Vector3(-1.0f, 0.0f, 10.0f));
     sofa->collision.Radius = 2.0f;
-    Components.push_back(sofa);
+    components_.push_back(sofa);
     furniture.push_back(sofa);
 
     KatamariFurnitureComponent* sofa1 = new KatamariFurnitureComponent(this, "Models/sofa.obj", L"Textures/sofa1.dds", 3.0f, Vector3(0.0f, 1.0f, 0.0f));
@@ -63,7 +63,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     sofa1->SetScale(Vector3(7.0f, 7.0f, 7.0f));
     sofa1->SetPosition(Vector3(-8.0f, 0.0f, 10.0f));
     sofa->collision.Radius = 2.0f;
-    Components.push_back(sofa1);
+    components_.push_back(sofa1);
     furniture.push_back(sofa1);
 
     /*GridComponent* grid = new GridComponent(this, 1.0f, 100);
@@ -73,24 +73,24 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     DebugAxisAnchorComponent* debugAnchor = new DebugAxisAnchorComponent(this);
     Components.push_back(debugAnchor);*/
 
-    orbitCameraController = new OrbitCameraController(this, Camera, ball);
+    orbitCameraController = new OrbitCameraController(this, GetCamera(), ball);
     orbitCameraController->isLMBActivated = true;
     
     // Camera controller binding
-    InputDevice->MouseMove.AddRaw(orbitCameraController, &OrbitCameraController::OnMouseMove);
+    inputDevice_->MouseMove.AddRaw(orbitCameraController, &OrbitCameraController::OnMouseMove);
 }
 
 void KatamariGame::Update()
 {
     orbitCameraController->Update();
     Vector3 dir = Vector3::Zero;
-    if (InputDevice->IsKeyDown(Keys::W))
+    if (inputDevice_->IsKeyDown(Keys::W))
         dir += orbitCameraController->GetForward();
-    if (InputDevice->IsKeyDown(Keys::S))
+    if (inputDevice_->IsKeyDown(Keys::S))
         dir -= orbitCameraController->GetForward();
-    if (InputDevice->IsKeyDown(Keys::A))
+    if (inputDevice_->IsKeyDown(Keys::A))
         dir -= (orbitCameraController->GetForward()).Cross(orbitCameraController->GetUp());
-    if (InputDevice->IsKeyDown(Keys::D))
+    if (inputDevice_->IsKeyDown(Keys::D))
         dir +=(orbitCameraController->GetForward()).Cross(orbitCameraController->GetUp());
     if (dir.Length() > 0.0f)
         ball->SetDirection(dir);
