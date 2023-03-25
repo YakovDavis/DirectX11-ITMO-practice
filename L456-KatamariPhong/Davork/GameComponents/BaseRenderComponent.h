@@ -19,12 +19,6 @@ public:
         DirectX::SimpleMath::Matrix WorldViewProj;
         DirectX::SimpleMath::Matrix InvTrWorld;
     };
-    struct CbDataPerScene
-    {
-        DirectX::SimpleMath::Vector4 LightPos;
-        DirectX::SimpleMath::Vector4 LightColorAmbStr;
-        DirectX::SimpleMath::Vector4 ViewDirSpecStr;
-    };
 protected:
     Microsoft::WRL::ComPtr<ID3D11InputLayout> layout_;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> rastState_;

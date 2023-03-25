@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "SimpleMath.h"
+#include <vector>
 
 class Camera
 {
@@ -19,4 +20,5 @@ public:
     Camera();
     void UpdateMatrix();
     DirectX::SimpleMath::Matrix GetMatrix() const;
+    std::vector<DirectX::SimpleMath::Vector4> GetFrustumCornersWorldSpace() const;
 };

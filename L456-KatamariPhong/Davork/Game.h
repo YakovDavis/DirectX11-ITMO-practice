@@ -23,6 +23,7 @@ class Game
 	
 	void CreateBackBuffer();
 	void CreateDepthStencilBuffer();
+	void CreateCsmDepthTextureArray();
 	void InitTimer();
 	void UpdateTimer();
 	
@@ -47,6 +48,9 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderView_;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView_;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexArr_;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthShadowDsv_;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthShadowSrv_;
 	bool screenResized_{};
 	float startTime_{};
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain_;

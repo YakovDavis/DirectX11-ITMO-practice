@@ -109,6 +109,54 @@ void Game::CreateDepthStencilBuffer()
 	}
 }
 
+void Game::CreateCsmDepthTextureArray()
+{
+	D3D11_TEXTURE2D_DESC depthDescription = {};
+	depthDescription.Width = 1024;
+	depthDescription.Height = 1024;
+	depthDescription.ArraySize = 4;
+	depthDescription.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
+	depthDescription.Format = DXGI_FORMAT_R32_TYPELESS;
+
+	auto res = device_->CreateTexture2D(&depthDescription, nullptr, shadowTexArr_.GetAddressOf());
+
+	if (FAILED(res))
+	{
+		OutputDebugString(TEXT("Fatal error: Failed to create CSM depth texture array!\n"));
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dViewDesc = {};
+	dViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+	dViewDesc.Texture2DArray = {};
+	dViewDesc.Texture2DArray.MipSlice = 0;
+	dViewDesc.Texture2DArray.FirstArraySlice = 0;
+	dViewDesc.Texture2DArray.ArraySize = 4;
+
+	res = device_->CreateDepthStencilView(shadowTexArr_.Get(), &dViewDesc, depthShadowDsv_.GetAddressOf());
+
+	if (FAILED(res))
+	{
+		OutputDebugString(TEXT("Fatal error: Failed to create CSM depth stencil view!\n"));
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+	srvDesc.Texture2DArray = {};
+	srvDesc.Texture2DArray.MostDetailedMip = 0;
+	srvDesc.Texture2DArray.MipLevels = 0;
+	srvDesc.Texture2DArray.FirstArraySlice = 0;
+	srvDesc.Texture2DArray.ArraySize = 4;
+
+	res = device_->CreateShaderResourceView(shadowTexArr_.Get(), &srvDesc, depthShadowSrv_.GetAddressOf());
+	
+	if (FAILED(res))
+	{
+		OutputDebugString(TEXT("Fatal error: Failed to create CSM depth SRV!\n"));
+	}
+}
+
 void Game::CreateBackBuffer()
 {
 	auto res = swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer_.GetAddressOf()));
@@ -330,6 +378,8 @@ void Game::PrepareResources()
 	CreateBackBuffer();
 
 	CreateDepthStencilBuffer();
+
+	CreateCsmDepthTextureArray();
 
 	ResourceFactory::Initialize(this);
 }

@@ -1,6 +1,7 @@
 ﻿#include "BaseRenderComponent.h"
 #include "../Game.h"
 #include "../DDSTextureLoader.h"
+#include "../PerSceneCb.h"
 #include "../ResourceFactory.h"
 
 #pragma warning(disable : 4267)
@@ -112,7 +113,7 @@ void BaseRenderComponent::Initialize()
 	constBufPerSceneDesc.CPUAccessFlags = 0;
 	constBufPerSceneDesc.MiscFlags = 0;
 	constBufPerSceneDesc.StructureByteStride = 0;
-	constBufPerSceneDesc.ByteWidth = sizeof(CbDataPerScene);
+	constBufPerSceneDesc.ByteWidth = sizeof(PerSceneCb);
 
 	game->GetDevice()->CreateBuffer(&constBufPerSceneDesc, nullptr, &constBuffers_[1]);
 
@@ -181,13 +182,13 @@ void BaseRenderComponent::Update()
 	objData.WorldViewProj = world * game->GetCamera()->GetMatrix();
 	objData.InvTrWorld = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose();
 	
-	CbDataPerScene sceneData = {};
+	PerSceneCb sceneData = {};
 	sceneData.LightPos = Vector4(1.0f, 1.0f, 1.0f, 0.0f);
-	sceneData.LightColorAmbStr = Vector4(1.0f, 1.0f, 1.0f, 0.4f);
-	sceneData.ViewDirSpecStr = Vector4(game->GetCamera()->Position.x - game->GetCamera()->Target.x, game->GetCamera()->Position.y - game->GetCamera()->Target.y,  game->GetCamera()->Position.z - game->GetCamera()->Target.z, 0.0f);
-	sceneData.ViewDirSpecStr.Normalize();
-	sceneData.ViewDirSpecStr.w = 0.5f;
 	sceneData.LightPos.Normalize();
+	sceneData.LightColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	sceneData.ViewPos = Vector4(game->GetCamera()->Position.x - game->GetCamera()->Target.x, game->GetCamera()->Position.y - game->GetCamera()->Target.y,  game->GetCamera()->Position.z - game->GetCamera()->Target.z, 0.0f);
+	sceneData.ViewPos.Normalize();
+	sceneData.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 0);
 	
 	game->GetContext()->UpdateSubresource(constBuffers_[0], 0, nullptr, &objData, 0, 0);
 	game->GetContext()->UpdateSubresource(constBuffers_[1], 0, nullptr, &sceneData, 0, 0);

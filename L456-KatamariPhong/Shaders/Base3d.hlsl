@@ -22,9 +22,10 @@ cbuffer cbPerObject : register(b0)
 
 cbuffer cbPerScene : register(b1)
 {
-	float4 lightDir;
-	float4 lightColorAmbStr;
-	float4 viewDirSpecStr;
+	float4 lightPos;
+	float4 lightColor;
+	float4 viewPos;
+	float4 ambientSpecularPowType;
 };
 
 Texture2D DiffuseMap : register(t0);
@@ -51,21 +52,18 @@ float4 PSMain(PS_IN input) : SV_Target
 	return input.tex;
 #endif
 
-	float4 ambient = lightColorAmbStr.w * float4(lightColorAmbStr.xyz, 1.0f);
+	float4 ambient = ambientSpecularPowType.x * float4(lightColor.xyz, 1.0f);
 	float4 objColor = DiffuseMap.SampleLevel(Sampler, input.tex.xy, 0);
 
 	float4 norm = normalize(input.normal);
-	float diff = max(dot(norm, lightDir), 0.0f);
-	float4 diffuse = diff * float4(lightColorAmbStr.xyz, 1.0f);
+	float diff = max(dot(norm, lightPos), 0.0f);
+	float4 diffuse = diff * float4(lightColor.xyz, 1.0f);
 
-	float4 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(dot(viewDirSpecStr.xyz, reflectDir.xyz), 0.0f), 32);
-	float4 specular = viewDirSpecStr.w * spec * float4(lightColorAmbStr.xyz, 1.0f);
+	float4 reflectDir = reflect(-lightPos, norm);
+	float spec = pow(max(dot(viewPos.xyz, reflectDir.xyz), 0.0f), ambientSpecularPowType.z);
+	float4 specular = ambientSpecularPowType.y * spec * float4(lightColor.xyz, 1.0f);
 
 	float4 result = (ambient + diffuse + specular) * objColor;
 	
 	return float4(result.xyz, 1.0f);
-
-	//return norm;
-	//return DiffuseMap.SampleLevel(Sampler, input.tex.xy, 0);
 }
