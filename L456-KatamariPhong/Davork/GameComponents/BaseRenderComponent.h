@@ -17,7 +17,8 @@ public:
     struct CbDataPerObject
     {
         DirectX::SimpleMath::Matrix WorldViewProj;
-        DirectX::SimpleMath::Matrix InvTrWorld;
+        DirectX::SimpleMath::Matrix WorldView;
+        DirectX::SimpleMath::Matrix InvTrWorldView;
     };
 protected:
     Microsoft::WRL::ComPtr<ID3D11InputLayout> layout_;

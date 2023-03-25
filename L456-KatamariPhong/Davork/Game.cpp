@@ -117,6 +117,12 @@ void Game::CreateCsmDepthTextureArray()
 	depthDescription.ArraySize = 4;
 	depthDescription.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
 	depthDescription.Format = DXGI_FORMAT_R32_TYPELESS;
+	depthDescription.MipLevels = 1;
+	depthDescription.SampleDesc.Count = 1;
+	depthDescription.SampleDesc.Quality = 0;
+	depthDescription.Usage = D3D11_USAGE_DEFAULT;
+	depthDescription.CPUAccessFlags = 0;
+	depthDescription.MiscFlags = 0;
 
 	auto res = device_->CreateTexture2D(&depthDescription, nullptr, shadowTexArr_.GetAddressOf());
 
@@ -145,7 +151,7 @@ void Game::CreateCsmDepthTextureArray()
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 	srvDesc.Texture2DArray = {};
 	srvDesc.Texture2DArray.MostDetailedMip = 0;
-	srvDesc.Texture2DArray.MipLevels = 0;
+	srvDesc.Texture2DArray.MipLevels = 1;
 	srvDesc.Texture2DArray.FirstArraySlice = 0;
 	srvDesc.Texture2DArray.ArraySize = 4;
 

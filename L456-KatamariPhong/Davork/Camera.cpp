@@ -6,7 +6,8 @@ using namespace SimpleMath;
 
 Camera::Camera()
 {
-    viewProj = Matrix::Identity;
+    view = Matrix::Identity;
+    proj = Matrix::Identity;
     
     FOV = XM_PI / 4.0f;
     AspectRatio = 1.0f;
@@ -22,20 +23,31 @@ Camera::Camera()
 
 void Camera::UpdateMatrix()
 {
+    view = Matrix::CreateLookAt(Position, Target, Up);
     if (IsOrthographic)
-        viewProj = Matrix::CreateLookAt(Position, Target, Up) * Matrix::CreateOrthographic(OrthographicWidth, OrthographicHeight, NearPlane / 10.0f, FarPlane);
+        proj = Matrix::CreateOrthographic(OrthographicWidth, OrthographicHeight, NearPlane / 10.0f, FarPlane);
     else
-        viewProj = Matrix::CreateLookAt(Position, Target, Up) * Matrix::CreatePerspectiveFieldOfView(FOV, AspectRatio, NearPlane, FarPlane);
+        proj = Matrix::CreatePerspectiveFieldOfView(FOV, AspectRatio, NearPlane, FarPlane);
 }
 
-Matrix Camera::GetMatrix() const
+Matrix Camera::GetViewProj() const
 {
-    return viewProj;
+    return view * proj;
+}
+
+Matrix Camera::GetView() const
+{
+    return view;
+}
+
+Matrix Camera::GetProj() const
+{
+    return proj;
 }
 
 std::vector<Vector4> Camera::GetFrustumCornersWorldSpace() const
 {
-    const auto inv = viewProj.Invert();
+    const auto inv = GetViewProj().Invert();
     
     std::vector<Vector4> frustumCorners;
     frustumCorners.reserve(8);

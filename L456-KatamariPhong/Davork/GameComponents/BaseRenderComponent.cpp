@@ -179,15 +179,14 @@ void BaseRenderComponent::Update()
 	const Matrix world = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
 	
 	CbDataPerObject objData = {};
-	objData.WorldViewProj = world * game->GetCamera()->GetMatrix();
-	objData.InvTrWorld = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose();
+	objData.WorldViewProj = world * game->GetCamera()->GetViewProj();
+	objData.WorldView = world * game->GetCamera()->GetView();
+	objData.InvTrWorldView = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose() * game->GetCamera()->GetView();
 	
 	PerSceneCb sceneData = {};
-	sceneData.LightPos = Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+	sceneData.LightPos = Vector4::Transform(Vector4(1.0f, 1.0f, 1.0f, 0.0f), game->GetCamera()->GetView());
 	sceneData.LightPos.Normalize();
 	sceneData.LightColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	sceneData.ViewPos = Vector4(game->GetCamera()->Position.x - game->GetCamera()->Target.x, game->GetCamera()->Position.y - game->GetCamera()->Target.y,  game->GetCamera()->Position.z - game->GetCamera()->Target.z, 0.0f);
-	sceneData.ViewPos.Normalize();
 	sceneData.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 0);
 	
 	game->GetContext()->UpdateSubresource(constBuffers_[0], 0, nullptr, &objData, 0, 0);

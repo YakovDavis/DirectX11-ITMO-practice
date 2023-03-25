@@ -5,7 +5,8 @@
 class Camera
 {
 protected:
-    DirectX::SimpleMath::Matrix viewProj;
+    DirectX::SimpleMath::Matrix view;
+    DirectX::SimpleMath::Matrix proj;
 public:
     bool IsOrthographic;
     float OrthographicWidth;
@@ -19,6 +20,8 @@ public:
     DirectX::SimpleMath::Vector3 Up;
     Camera();
     void UpdateMatrix();
-    DirectX::SimpleMath::Matrix GetMatrix() const;
+    DirectX::SimpleMath::Matrix GetViewProj() const;
+    DirectX::SimpleMath::Matrix GetView() const;
+    DirectX::SimpleMath::Matrix GetProj() const;
     std::vector<DirectX::SimpleMath::Vector4> GetFrustumCornersWorldSpace() const;
 };
