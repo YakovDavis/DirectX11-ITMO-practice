@@ -19,7 +19,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
 
     QuadComponent* quad = new QuadComponent(this, L"Textures/wood.dds");
     quad->SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Right, XM_PI / 2.0f));
-    quad->SetScale(Vector3::One * 1000.0f);
+    quad->SetScale(Vector3::One * 100.0f);
     components_.push_back(quad);
 
     for (int i = 0; i < 10; ++i)

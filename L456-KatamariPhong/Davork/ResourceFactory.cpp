@@ -9,6 +9,7 @@ bool ResourceFactory::isInitialized_ = false;
 Game* ResourceFactory::activeGame_;
 std::unordered_map<std::string, ResourceFactory::VertexShaderInfo> ResourceFactory::vShaders_ {};
 std::unordered_map<std::string, ResourceFactory::PixelShaderInfo> ResourceFactory::pShaders_ {};
+std::unordered_map<std::string, ResourceFactory::GeometryShaderInfo> ResourceFactory::gShaders_ {};
 std::unordered_map<const wchar_t*, ResourceFactory::TextureInfo> ResourceFactory::textures_ {};
 std::unordered_map<std::string, ResourceFactory::GeometryInfo> ResourceFactory::meshes_ {};
 
@@ -85,6 +86,10 @@ void ResourceFactory::Initialize(Game* game)
     isInitialized_ = true;
 
     vShaders_.insert({"base", {nullptr, nullptr}});
+    vShaders_.insert({"csm", {nullptr, nullptr}});
+
+    gShaders_.insert({ "csm", {nullptr, nullptr} });
+
     pShaders_.insert({"base", {nullptr, nullptr}});
     
     ID3DBlob* errorVertexCode = nullptr;
@@ -110,11 +115,64 @@ void ResourceFactory::Initialize(Game* game)
         {
             MessageBox(game->GetDisplay()->hWnd, L"Base3d.hlsl", L"Missing Shader File", MB_OK);
         }
-
-        return;
+        //return;
     }
 
-    ID3DBlob* errorPixelCode;
+    errorVertexCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/Csm.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "VSMain",
+        "vs_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(vShaders_["csm"].Bc),
+        &errorVertexCode);
+
+    if (FAILED(res)) {
+        // If the shader failed to compile it should have written something to the error message.
+        if (errorVertexCode)
+        {
+            const char* compileErrors = static_cast<char*>(errorVertexCode->GetBufferPointer());
+
+            std::cout << compileErrors << std::endl;
+        }
+        // If there was  nothing in the error message then it simply could not find the shader file itself.
+        else
+        {
+            MessageBox(game->GetDisplay()->hWnd, L"Csm.hlsl", L"Missing Shader File", MB_OK);
+        }
+        //return;
+    }
+
+    ID3DBlob* errorGeometryCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/Csm.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "GSMain",
+        "gs_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(gShaders_["csm"].Bc),
+        &errorGeometryCode);
+
+    if (FAILED(res))
+    {
+        // If the shader failed to compile it should have written something to the error message.
+        if (errorGeometryCode)
+        {
+            const char* compileErrors = static_cast<char*>(errorGeometryCode->GetBufferPointer());
+            std::cout << compileErrors << std::endl;
+        }
+        // If there was  nothing in the error message then it simply could not find the shader file itself.
+        else
+        {
+            MessageBox(game->GetDisplay()->hWnd, L"Csm.hlsl", L"Missing Shader File", MB_OK);
+        }
+        //return;
+    }
+
+    ID3DBlob* errorPixelCode = nullptr;
     res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
         nullptr /*macros*/,
         nullptr /*include*/,
@@ -125,12 +183,22 @@ void ResourceFactory::Initialize(Game* game)
         &(pShaders_["base"].Bc),
         &errorPixelCode);
 
-    game->GetDevice()->CreateVertexShader(
+    res = game->GetDevice()->CreateVertexShader(
         vShaders_["base"].Bc->GetBufferPointer(),
         vShaders_["base"].Bc->GetBufferSize(),
         nullptr, &(vShaders_["base"].Shader));
 
-    game->GetDevice()->CreatePixelShader(
+    res = game->GetDevice()->CreateVertexShader(
+        vShaders_["csm"].Bc->GetBufferPointer(),
+        vShaders_["csm"].Bc->GetBufferSize(),
+        nullptr, &(vShaders_["csm"].Shader));
+
+    game->GetDevice()->CreateGeometryShader(
+        gShaders_["csm"].Bc->GetBufferPointer(),
+        gShaders_["csm"].Bc->GetBufferSize(),
+        nullptr, &(gShaders_["csm"].Shader));
+
+    res = game->GetDevice()->CreatePixelShader(
         pShaders_["base"].Bc->GetBufferPointer(),
         pShaders_["base"].Bc->GetBufferSize(),
         nullptr, &(pShaders_["base"].Shader));
@@ -194,6 +262,11 @@ ID3D11PixelShader* ResourceFactory::GetPixelShader(const std::string name)
     return pShaders_[name].Shader;
 }
 
+ID3D11GeometryShader* ResourceFactory::GetGeometryShader(std::string name)
+{
+    return gShaders_[name].Shader;
+}
+
 ID3DBlob* ResourceFactory::GetVertexShaderBC(std::string name)
 {
     return vShaders_[name].Bc;
@@ -202,6 +275,11 @@ ID3DBlob* ResourceFactory::GetVertexShaderBC(std::string name)
 ID3DBlob* ResourceFactory::GetPixelShaderBC(std::string name)
 {
     return pShaders_[name].Bc;
+}
+
+ID3DBlob* ResourceFactory::GetGeometryShaderBC(std::string name)
+{
+    return gShaders_[name].Bc;
 }
 
 const std::vector<Vertex>& ResourceFactory::GetPoints(std::string name)

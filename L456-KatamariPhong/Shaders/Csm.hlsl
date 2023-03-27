@@ -19,21 +19,23 @@ struct GS_IN
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorldViewProj;
-	float4x4 gInvTrWorld;
+	float4x4 gWorld;
+	float4x4 gWorldView;
+	float4x4 gInvTrWorldView;
 };
 
 GS_IN VSMain(VS_IN input)
 {
 	GS_IN output = (GS_IN)0;
 
-	output.pos = mul(float4(input.pos.xyz, 1.0f), gWorldViewProj);
+	output.pos = mul(float4(input.pos.xyz, 1.0f), gWorld);
 
 	return output;
 }
 
 cbuffer cbCascade : register(b0)
 {
-	float4x4 gViewProj[CASCADE_COUNT];
+	float4x4 gViewProj[CASCADE_COUNT + 1];
 	float4 gDistances;
 };
 
@@ -43,12 +45,12 @@ struct GS_OUT
  	uint arrInd : SV_RenderTargetArrayIndex;
 };
 
-[instance(4)]
+[instance(CASCADE_COUNT + 1)]
 [maxvertexcount(3)]
 void GSMain(triangle GS_IN p[3], in uint id : SV_GSInstanceID, inout TriangleStream<GS_OUT> stream)
 {
 	[unroll]
-	for (int i = 0; i < CASCADE_COUNT - 1; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
 		GS_OUT gs = (GS_OUT)0;
 		gs.pos = mul(float4(p[i].pos.xyz, 1.0f), gViewProj[id]);

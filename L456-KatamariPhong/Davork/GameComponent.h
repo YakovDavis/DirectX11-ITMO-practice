@@ -21,6 +21,7 @@ public:
 	virtual DirectX::SimpleMath::Quaternion GetRotation() const { return rotation; }
 	virtual DirectX::SimpleMath::Vector3 GetScale() const { return scale; }
 	virtual void DestroyResources() = 0;
+	virtual void PrepareFrame() = 0; // Shadow passes and stuff
 	virtual void Draw() = 0;
 	virtual void Initialize() = 0;
 	virtual void Reload() = 0;

@@ -2,6 +2,9 @@
 
 #include "ResourceFactory.h"
 
+using namespace DirectX;
+using namespace SimpleMath;
+
 LRESULT CALLBACK Game::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {
 	Game* pThis;
@@ -114,7 +117,7 @@ void Game::CreateCsmDepthTextureArray()
 	D3D11_TEXTURE2D_DESC depthDescription = {};
 	depthDescription.Width = 1024;
 	depthDescription.Height = 1024;
-	depthDescription.ArraySize = 4;
+	depthDescription.ArraySize = 5;
 	depthDescription.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
 	depthDescription.Format = DXGI_FORMAT_R32_TYPELESS;
 	depthDescription.MipLevels = 1;
@@ -137,7 +140,7 @@ void Game::CreateCsmDepthTextureArray()
 	dViewDesc.Texture2DArray = {};
 	dViewDesc.Texture2DArray.MipSlice = 0;
 	dViewDesc.Texture2DArray.FirstArraySlice = 0;
-	dViewDesc.Texture2DArray.ArraySize = 4;
+	dViewDesc.Texture2DArray.ArraySize = 5;
 
 	res = device_->CreateDepthStencilView(shadowTexArr_.Get(), &dViewDesc, depthShadowDsv_.GetAddressOf());
 
@@ -147,13 +150,13 @@ void Game::CreateCsmDepthTextureArray()
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 	srvDesc.Texture2DArray = {};
 	srvDesc.Texture2DArray.MostDetailedMip = 0;
 	srvDesc.Texture2DArray.MipLevels = 1;
 	srvDesc.Texture2DArray.FirstArraySlice = 0;
-	srvDesc.Texture2DArray.ArraySize = 4;
+	srvDesc.Texture2DArray.ArraySize = 5;
 
 	res = device_->CreateShaderResourceView(shadowTexArr_.Get(), &srvDesc, depthShadowSrv_.GetAddressOf());
 	
@@ -180,7 +183,7 @@ void Game::CreateBackBuffer()
 	}
 }
 
-Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested_(false), name_(name), frameCount_(0)
+Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested_(false), name_(name), frameCount_(0), dLight_(this)
 {
 	instance_ = GetModuleHandle(nullptr);
 
@@ -283,6 +286,21 @@ ID3D11DeviceContext* Game::GetContext() const
 	return context_.Get();
 }
 
+ID3D11ShaderResourceView* Game::GetCsm() const
+{
+	return depthShadowSrv_.Get();
+}
+
+ID3D11Buffer* const* Game::GetPerSceneCb() const
+{
+	return perSceneCBuffer_.GetAddressOf();
+}
+
+DirectionalLight* Game::GetDLight()
+{
+	return &dLight_;
+}
+
 InputDevice* Game::GetInputDevice() const
 {
 	return inputDevice_.get();
@@ -309,6 +327,14 @@ void Game::DestroyResources()
 
 void Game::Draw()
 {
+	context_->ClearState();
+
+	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), depthStencilView_.Get());
+
+	constexpr float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	context_->ClearRenderTargetView(renderView_.Get(), color);
+	context_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
 	for (const auto c : components_)
 	{
 		c->Draw();
@@ -334,11 +360,14 @@ void Game::PrepareFrame()
 {
 	context_->ClearState();
 
-	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), depthStencilView_.Get());
+	context_->OMSetRenderTargets(0, nullptr, depthShadowDsv_.Get());
 
-	constexpr float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	context_->ClearRenderTargetView(renderView_.Get(), color);
-	context_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, 1.0f, 0);
+	context_->ClearDepthStencilView(depthShadowDsv_.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	for (const auto c : components_)
+	{
+		c->PrepareFrame();
+	}
 }
 
 void Game::PrepareResources()
@@ -388,10 +417,33 @@ void Game::PrepareResources()
 	CreateCsmDepthTextureArray();
 
 	ResourceFactory::Initialize(this);
+
+	D3D11_BUFFER_DESC constBufPerSceneDesc;
+	constBufPerSceneDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constBufPerSceneDesc.Usage = D3D11_USAGE_DEFAULT;
+	constBufPerSceneDesc.CPUAccessFlags = 0;
+	constBufPerSceneDesc.MiscFlags = 0;
+	constBufPerSceneDesc.StructureByteStride = 0;
+	constBufPerSceneDesc.ByteWidth = sizeof(PerSceneCb);
+
+	GetDevice()->CreateBuffer(&constBufPerSceneDesc, nullptr, perSceneCBuffer_.GetAddressOf());
 }
 
 void Game::Update()
 {
+	auto tmp = Vector4(20.0f, 50.0f, 20.0f, 0.0f);
+	tmp.Normalize();
+	dLight_.SetDirection(tmp);
+	sceneData_.LightPos = Vector4::Transform(dLight_.GetDirection(), GetCamera()->GetView());
+	sceneData_.LightPos.Normalize();
+	sceneData_.LightColor = dLight_.GetColor();
+	sceneData_.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 0);
+	sceneData_.T = Matrix(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
 	camera_->UpdateMatrix();
 	for (const auto c : components_)
 	{

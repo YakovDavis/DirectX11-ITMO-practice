@@ -23,8 +23,9 @@ CD3D11_RASTERIZER_DESC BaseRenderComponent::CreateRasterizerStateDesc()
 
 BaseRenderComponent::BaseRenderComponent(Game* game)
 	: GameComponent(game), layout_(nullptr), rastState_(nullptr), vertexBuffer_(nullptr), indexBuffer_(nullptr),
-	  constBuffers_(new ID3D11Buffer*[2]), strides_{}, offsets_{}, passThroughVs_(false), colorModePs_(false),
-	  topologyType_(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST), textureFileName_(L"Textures/wood.dds"), samplerState_(nullptr)
+	  strides_{}, offsets_{}, passThroughVs_(false), colorModePs_(false),
+	  topologyType_(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST), textureFileName_(L"Textures/wood.dds"), samplerState_(nullptr),
+	  isShadowCasting_(true)
 {
 }
 
@@ -97,6 +98,9 @@ void BaseRenderComponent::Initialize()
 	strides_[0] = sizeof(Vertex);
 	offsets_[0] = 0;
 
+	constBuffers_.push_back(nullptr);
+	constBuffers_.push_back(nullptr);
+
 	D3D11_BUFFER_DESC constBufPerObjDesc;
 	constBufPerObjDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constBufPerObjDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -105,32 +109,52 @@ void BaseRenderComponent::Initialize()
 	constBufPerObjDesc.StructureByteStride = 0;
 	constBufPerObjDesc.ByteWidth = sizeof(CbDataPerObject);
 
-	game->GetDevice()->CreateBuffer(&constBufPerObjDesc, nullptr, &constBuffers_[0]);
+	game->GetDevice()->CreateBuffer(&constBufPerObjDesc, nullptr, constBuffers_[0].GetAddressOf());
 
-	D3D11_BUFFER_DESC constBufPerSceneDesc;
-	constBufPerSceneDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constBufPerSceneDesc.Usage = D3D11_USAGE_DEFAULT;
-	constBufPerSceneDesc.CPUAccessFlags = 0;
-	constBufPerSceneDesc.MiscFlags = 0;
-	constBufPerSceneDesc.StructureByteStride = 0;
-	constBufPerSceneDesc.ByteWidth = sizeof(PerSceneCb);
+	D3D11_BUFFER_DESC constBufCascadeDesc;
+	constBufCascadeDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constBufCascadeDesc.Usage = D3D11_USAGE_DEFAULT;
+	constBufCascadeDesc.CPUAccessFlags = 0;
+	constBufCascadeDesc.MiscFlags = 0;
+	constBufCascadeDesc.StructureByteStride = 0;
+	constBufCascadeDesc.ByteWidth = sizeof(Matrix) * 5 + sizeof(Vector4);
 
-	game->GetDevice()->CreateBuffer(&constBufPerSceneDesc, nullptr, &constBuffers_[1]);
+	game->GetDevice()->CreateBuffer(&constBufCascadeDesc, nullptr, constBuffers_[1].GetAddressOf());
 
 	D3D11_SAMPLER_DESC samplerStateDesc = {};
 	samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	//samplerStateDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 	samplerStateDesc.MinLOD = 0.0f;
 	samplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	
 	auto res = game->GetDevice()->CreateSamplerState(&samplerStateDesc, samplerState_.GetAddressOf());
 
+	D3D11_SAMPLER_DESC depthSamplerStateDesc = {};
+	depthSamplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	depthSamplerStateDesc.ComparisonFunc = D3D11_COMPARISON_GREATER_EQUAL;
+	depthSamplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	depthSamplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	depthSamplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	depthSamplerStateDesc.BorderColor[0] = 1.0f;
+	depthSamplerStateDesc.BorderColor[1] = 1.0f;
+	depthSamplerStateDesc.BorderColor[2] = 1.0f;
+	depthSamplerStateDesc.BorderColor[3] = 1.0f;
+
+	res = game->GetDevice()->CreateSamplerState(&depthSamplerStateDesc, depthSamplerState_.GetAddressOf());
+
 	const CD3D11_RASTERIZER_DESC rastDesc = CreateRasterizerStateDesc();
 
 	res = game->GetDevice()->CreateRasterizerState(&rastDesc, rastState_.GetAddressOf());
+
+	CD3D11_RASTERIZER_DESC shadowRastDesc = CreateRasterizerStateDesc();
+
+	shadowRastDesc.CullMode = D3D11_CULL_FRONT;
+	shadowRastDesc.DepthClipEnable = false;
+
+	res = game->GetDevice()->CreateRasterizerState(&shadowRastDesc, shadowRastState_.GetAddressOf());
 }
 
 void BaseRenderComponent::Reload()
@@ -156,21 +180,52 @@ void BaseRenderComponent::Draw()
 	game->GetContext()->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
 	game->GetContext()->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), strides_, offsets_);
 	game->GetContext()->VSSetShader(ResourceFactory::GetVertexShader("base"), nullptr, 0);
-	game->GetContext()->VSSetConstantBuffers(0, 2, constBuffers_);
-	game->GetContext()->PSSetConstantBuffers(0, 2, constBuffers_);
+	game->GetContext()->VSSetConstantBuffers(0, 1, constBuffers_[0].GetAddressOf());
+	game->GetContext()->PSSetConstantBuffers(1, 1, constBuffers_[1].GetAddressOf());
+	game->GetContext()->PSSetConstantBuffers(0, 1, game->GetPerSceneCb());
 	game->GetContext()->PSSetShader(ResourceFactory::GetPixelShader("base"), nullptr, 0);
-	const auto test = ResourceFactory::GetTextureView(textureFileName_);
-	game->GetContext()->PSSetShaderResources(0, 1, &test);
+	const auto texture = ResourceFactory::GetTextureView(textureFileName_);
+	game->GetContext()->PSSetShaderResources(0, 1, &texture);
+	const auto csm = game->GetCsm();
+	game->GetContext()->PSSetShaderResources(1, 1, &csm);
 	game->GetContext()->PSSetSamplers(0, 1, samplerState_.GetAddressOf());
+	game->GetContext()->PSSetSamplers(1, 1, depthSamplerState_.GetAddressOf());
 
 	game->GetContext()->DrawIndexed(indices_.size(), 0, 0);
 }
 
 void BaseRenderComponent::DestroyResources()
 {
-	constBuffers_[0]->Release();
-	constBuffers_[1]->Release();
-	delete[] constBuffers_;
+}
+
+void BaseRenderComponent::PrepareFrame()
+{
+	if (!isShadowCasting_)
+		return;
+
+	game->GetContext()->RSSetState(rastState_.Get());
+
+	D3D11_VIEWPORT viewport;
+	viewport.Width = 1024.0f;
+	viewport.Height = 1024.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1.0f;
+
+	game->GetContext()->RSSetViewports(1, &viewport);
+
+	game->GetContext()->IASetInputLayout(layout_.Get());
+	game->GetContext()->IASetPrimitiveTopology(topologyType_);
+	game->GetContext()->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
+	game->GetContext()->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), strides_, offsets_);
+	game->GetContext()->VSSetShader(ResourceFactory::GetVertexShader("csm"), nullptr, 0);
+	game->GetContext()->VSSetConstantBuffers(0, 1, constBuffers_[0].GetAddressOf());
+	game->GetContext()->PSSetShader(nullptr, nullptr, 0);
+	game->GetContext()->GSSetShader(ResourceFactory::GetGeometryShader("csm"), nullptr, 0);
+	game->GetContext()->GSSetConstantBuffers(0, 1, constBuffers_[1].GetAddressOf());
+
+	game->GetContext()->DrawIndexed(indices_.size(), 0, 0);
 }
 
 void BaseRenderComponent::Update()
@@ -180,15 +235,20 @@ void BaseRenderComponent::Update()
 	
 	CbDataPerObject objData = {};
 	objData.WorldViewProj = world * game->GetCamera()->GetViewProj();
+	objData.World = world;
 	objData.WorldView = world * game->GetCamera()->GetView();
 	objData.InvTrWorldView = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose() * game->GetCamera()->GetView();
-	
-	PerSceneCb sceneData = {};
-	sceneData.LightPos = Vector4::Transform(Vector4(1.0f, 1.0f, 1.0f, 0.0f), game->GetCamera()->GetView());
-	sceneData.LightPos.Normalize();
-	sceneData.LightColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	sceneData.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 0);
-	
-	game->GetContext()->UpdateSubresource(constBuffers_[0], 0, nullptr, &objData, 0, 0);
-	game->GetContext()->UpdateSubresource(constBuffers_[1], 0, nullptr, &sceneData, 0, 0);
+
+	CbDataCascade cascadeData = {};
+	auto tmp = game->GetDLight()->GetLightSpaceMatrices();
+	for (int i = 0; i < 5; ++i)
+	{
+		cascadeData.ViewProj[i] = tmp[i];
+	}
+	cascadeData.Distance = game->GetDLight()->GetShadowCascadeDistances();
+
+	//objData.WorldViewProj = world * cascadeData.ViewProj[0];
+
+	game->GetContext()->UpdateSubresource(constBuffers_[0].Get(), 0, nullptr, &objData, 0, 0);
+	game->GetContext()->UpdateSubresource(constBuffers_[1].Get(), 0, nullptr, &cascadeData, 0, 0);
 }

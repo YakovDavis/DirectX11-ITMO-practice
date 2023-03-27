@@ -11,6 +11,8 @@
 #include "GameComponent.h"
 #include "DisplayWin32.h"
 #include "InputDevice.h"
+#include "PerSceneCb.h"
+#include "DirectionalLight.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -51,6 +53,9 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexArr_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthShadowDsv_;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthShadowSrv_;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> perSceneCBuffer_;
+	PerSceneCb sceneData_{};
+	DirectionalLight dLight_;
 	bool screenResized_{};
 	float startTime_{};
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain_;
@@ -72,6 +77,9 @@ public:
 	void Run();
 	ID3D11Device* GetDevice() const;
 	ID3D11DeviceContext* GetContext() const;
+	ID3D11ShaderResourceView* GetCsm() const;
+	ID3D11Buffer* const* GetPerSceneCb() const;
+	DirectionalLight* GetDLight();
 	InputDevice* GetInputDevice() const;
 	Camera* GetCamera() const;
 	DisplayWin32* GetDisplay() const;
