@@ -100,7 +100,19 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 		bias *= 1 / (gDistances[layer] * biasModifier);
 	}
 
-	float shadow = CascadeShadowMap.SampleCmp(DepthSampler, float3(projCoords.xy, layer), currentDepth);
+	// PCF
+	float shadow = 0.0f;
+	float2 texelSize = 1.0f / 1024.0f;
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			shadow += CascadeShadowMap.SampleCmp(DepthSampler, float3(projCoords.xy + float2(x, y) * texelSize, layer), currentDepth - bias);
+		}
+	}
+	shadow /= 9.0f;
+
+	//float shadow = CascadeShadowMap.SampleCmp(DepthSampler, float3(projCoords.xy, layer), currentDepth);
 
 	return shadow;
 }
