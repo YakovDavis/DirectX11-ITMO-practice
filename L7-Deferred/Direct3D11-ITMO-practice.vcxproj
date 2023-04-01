@@ -282,6 +282,7 @@
     <ClCompile Include="Davork\GameComponents\MeshRenderComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\QuadComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\SphereComponent.cpp" />
+    <ClCompile Include="Davork\GBuffer.cpp" />
     <ClCompile Include="Davork\OrbitCameraController.cpp" />
     <ClCompile Include="Davork\ResourceFactory.cpp" />
     <ClCompile Include="Davork\Delegates.cpp">
@@ -800,6 +801,9 @@
     </ClCompile>
     <ClCompile Include="KatamariGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
+    <None Include="Shaders\GBuffer.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Shaders\Base3d.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -821,6 +825,7 @@
     <ClInclude Include="Davork\GameComponents\MeshRenderComponent.h" />
     <ClInclude Include="Davork\GameComponents\QuadComponent.h" />
     <ClInclude Include="Davork\GameComponents\SphereComponent.h" />
+    <ClInclude Include="Davork\GBuffer.h" />
     <ClInclude Include="Davork\LoaderHelpers.h" />
     <ClInclude Include="Davork\OrbitCameraController.h" />
     <ClInclude Include="Davork\PerSceneCb.h" />
