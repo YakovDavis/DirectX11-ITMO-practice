@@ -13,6 +13,7 @@
 #include "InputDevice.h"
 #include "PerSceneCb.h"
 #include "DirectionalLight.h"
+#include "GBuffer.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -41,6 +42,7 @@ protected:
 	virtual void UpdateInternal();
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer_;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rastState_;
 	int debugAnnotation_{};
 	Microsoft::WRL::ComPtr<ID3D11Device> device_;
 	HINSTANCE instance_;
@@ -48,6 +50,7 @@ protected:
 	std::chrono::steady_clock::time_point prevTime_{};
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> renderSrv_;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderView_;
+	GBuffer gBuffer_;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView_;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexArr_;

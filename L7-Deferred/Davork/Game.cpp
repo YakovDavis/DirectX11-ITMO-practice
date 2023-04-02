@@ -183,7 +183,7 @@ void Game::CreateBackBuffer()
 	}
 }
 
-Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested_(false), name_(name), frameCount_(0), dLight_(this)
+Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested_(false), name_(name), frameCount_(0), dLight_(this), gBuffer_(this)
 {
 	instance_ = GetModuleHandle(nullptr);
 
@@ -329,16 +329,46 @@ void Game::Draw()
 {
 	context_->ClearState();
 
-	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), depthStencilView_.Get());
+	const auto rtvs = new ID3D11RenderTargetView*[3];
+	rtvs[0] = gBuffer_.albedoRtv_.Get();
+	rtvs[1] = gBuffer_.positionRtv_.Get();
+	rtvs[2] = gBuffer_.normalRtv_.Get();
+	context_->OMSetRenderTargets(3, rtvs, depthStencilView_.Get());
 
 	constexpr float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	context_->ClearRenderTargetView(renderView_.Get(), color);
+	context_->ClearRenderTargetView(gBuffer_.albedoRtv_.Get(), color);
+	context_->ClearRenderTargetView(gBuffer_.positionRtv_.Get(), color);
+	context_->ClearRenderTargetView(gBuffer_.normalRtv_.Get(), color);
 	context_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	for (const auto c : components_)
 	{
 		c->Draw();
 	}
+
+	context_->ClearState();
+
+	context_->RSSetState(rastState_.Get());
+
+	D3D11_VIEWPORT viewport;
+	viewport.Width = static_cast<float>(display_->ClientWidth);
+	viewport.Height = static_cast<float>(display_->ClientHeight);
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1.0f;
+
+	context_->RSSetViewports(1, &viewport);
+	
+	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), nullptr);
+	
+	context_->VSSetShader(ResourceFactory::GetVertexShader("lightpass"), nullptr, 0);
+	context_->PSSetShader(ResourceFactory::GetPixelShader("lightpass"), nullptr, 0);
+	context_->PSSetShaderResources(0, 1, gBuffer_.albedoSrv_.GetAddressOf());
+	context_->PSSetShaderResources(1, 1, gBuffer_.positionSrv_.GetAddressOf());
+	context_->PSSetShaderResources(2, 1, gBuffer_.normalSrv_.GetAddressOf());
+
+	context_->Draw(9, 0);
 }
 
 void Game::EndFrame()
@@ -418,6 +448,8 @@ void Game::PrepareResources()
 
 	ResourceFactory::Initialize(this);
 
+	gBuffer_.Initialize();
+
 	D3D11_BUFFER_DESC constBufPerSceneDesc;
 	constBufPerSceneDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constBufPerSceneDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -427,6 +459,15 @@ void Game::PrepareResources()
 	constBufPerSceneDesc.ByteWidth = sizeof(PerSceneCb);
 
 	GetDevice()->CreateBuffer(&constBufPerSceneDesc, nullptr, perSceneCBuffer_.GetAddressOf());
+
+	CD3D11_RASTERIZER_DESC rastDesc = {};
+	
+	rastDesc.CullMode = D3D11_CULL_NONE;
+	rastDesc.FillMode = D3D11_FILL_SOLID;
+	rastDesc.FrontCounterClockwise = true;
+	rastDesc.DepthClipEnable = true;
+
+	res = device_->CreateRasterizerState(&rastDesc, rastState_.GetAddressOf());
 }
 
 void Game::Update()

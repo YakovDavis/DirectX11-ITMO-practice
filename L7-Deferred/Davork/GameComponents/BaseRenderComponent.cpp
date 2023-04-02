@@ -179,17 +179,12 @@ void BaseRenderComponent::Draw()
 	game->GetContext()->IASetPrimitiveTopology(topologyType_);
 	game->GetContext()->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
 	game->GetContext()->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), strides_, offsets_);
-	game->GetContext()->VSSetShader(ResourceFactory::GetVertexShader("base"), nullptr, 0);
+	game->GetContext()->VSSetShader(ResourceFactory::GetVertexShader("gbuffer"), nullptr, 0);
 	game->GetContext()->VSSetConstantBuffers(0, 1, constBuffers_[0].GetAddressOf());
-	game->GetContext()->PSSetConstantBuffers(1, 1, constBuffers_[1].GetAddressOf());
-	game->GetContext()->PSSetConstantBuffers(0, 1, game->GetPerSceneCb());
-	game->GetContext()->PSSetShader(ResourceFactory::GetPixelShader("base"), nullptr, 0);
+	game->GetContext()->PSSetShader(ResourceFactory::GetPixelShader("gbuffer"), nullptr, 0);
 	const auto texture = ResourceFactory::GetTextureView(textureFileName_);
 	game->GetContext()->PSSetShaderResources(0, 1, &texture);
-	const auto csm = game->GetCsm();
-	game->GetContext()->PSSetShaderResources(1, 1, &csm);
 	game->GetContext()->PSSetSamplers(0, 1, samplerState_.GetAddressOf());
-	game->GetContext()->PSSetSamplers(1, 1, depthSamplerState_.GetAddressOf());
 
 	game->GetContext()->DrawIndexed(indices_.size(), 0, 0);
 }
@@ -246,8 +241,6 @@ void BaseRenderComponent::Update()
 		cascadeData.ViewProj[i] = tmp[i];
 	}
 	cascadeData.Distance = game->GetDLight()->GetShadowCascadeDistances();
-
-	//objData.WorldViewProj = world * cascadeData.ViewProj[0];
 
 	game->GetContext()->UpdateSubresource(constBuffers_[0].Get(), 0, nullptr, &objData, 0, 0);
 	game->GetContext()->UpdateSubresource(constBuffers_[1].Get(), 0, nullptr, &cascadeData, 0, 0);

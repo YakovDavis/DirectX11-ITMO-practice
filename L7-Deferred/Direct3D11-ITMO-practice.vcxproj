@@ -801,6 +801,9 @@
     </ClCompile>
     <ClCompile Include="KatamariGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
+    <None Include="Shaders\LightPass.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Shaders\GBuffer.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

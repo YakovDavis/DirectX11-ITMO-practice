@@ -86,11 +86,15 @@ void ResourceFactory::Initialize(Game* game)
     isInitialized_ = true;
 
     vShaders_.insert({"base", {nullptr, nullptr}});
+    vShaders_.insert({"gbuffer", {nullptr, nullptr}});
+    vShaders_.insert({"lightpass", {nullptr, nullptr}});
     vShaders_.insert({"csm", {nullptr, nullptr}});
 
     gShaders_.insert({ "csm", {nullptr, nullptr} });
 
     pShaders_.insert({"base", {nullptr, nullptr}});
+    pShaders_.insert({"gbuffer", {nullptr, nullptr}});
+    pShaders_.insert({"lightpass", {nullptr, nullptr}});
     
     ID3DBlob* errorVertexCode = nullptr;
     auto res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
@@ -117,6 +121,28 @@ void ResourceFactory::Initialize(Game* game)
         }
         //return;
     }
+
+    errorVertexCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/GBuffer.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "VSMain",
+        "vs_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(vShaders_["gbuffer"].Bc),
+        &errorVertexCode);
+
+    errorVertexCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/LightPass.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "VSMain",
+        "vs_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(vShaders_["lightpass"].Bc),
+        &errorVertexCode);
 
     errorVertexCode = nullptr;
     res = D3DCompileFromFile(L"./Shaders/Csm.hlsl",
@@ -183,17 +209,49 @@ void ResourceFactory::Initialize(Game* game)
         &(pShaders_["base"].Bc),
         &errorPixelCode);
 
+    errorPixelCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/GBuffer.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "PSMain",
+        "ps_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(pShaders_["gbuffer"].Bc),
+        &errorPixelCode);
+
+    errorPixelCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/LightPass.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "PSMain",
+        "ps_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(pShaders_["lightpass"].Bc),
+        &errorPixelCode);
+
     res = game->GetDevice()->CreateVertexShader(
         vShaders_["base"].Bc->GetBufferPointer(),
         vShaders_["base"].Bc->GetBufferSize(),
         nullptr, &(vShaders_["base"].Shader));
 
     res = game->GetDevice()->CreateVertexShader(
+        vShaders_["gbuffer"].Bc->GetBufferPointer(),
+        vShaders_["gbuffer"].Bc->GetBufferSize(),
+        nullptr, &(vShaders_["gbuffer"].Shader));
+
+    res = game->GetDevice()->CreateVertexShader(
+        vShaders_["lightpass"].Bc->GetBufferPointer(),
+        vShaders_["lightpass"].Bc->GetBufferSize(),
+        nullptr, &(vShaders_["lightpass"].Shader));
+
+    res = game->GetDevice()->CreateVertexShader(
         vShaders_["csm"].Bc->GetBufferPointer(),
         vShaders_["csm"].Bc->GetBufferSize(),
         nullptr, &(vShaders_["csm"].Shader));
 
-    game->GetDevice()->CreateGeometryShader(
+    res = game->GetDevice()->CreateGeometryShader(
         gShaders_["csm"].Bc->GetBufferPointer(),
         gShaders_["csm"].Bc->GetBufferSize(),
         nullptr, &(gShaders_["csm"].Shader));
@@ -202,6 +260,16 @@ void ResourceFactory::Initialize(Game* game)
         pShaders_["base"].Bc->GetBufferPointer(),
         pShaders_["base"].Bc->GetBufferSize(),
         nullptr, &(pShaders_["base"].Shader));
+
+    res = game->GetDevice()->CreatePixelShader(
+        pShaders_["gbuffer"].Bc->GetBufferPointer(),
+        pShaders_["gbuffer"].Bc->GetBufferSize(),
+        nullptr, &(pShaders_["gbuffer"].Shader));
+
+    res = game->GetDevice()->CreatePixelShader(
+        pShaders_["lightpass"].Bc->GetBufferPointer(),
+        pShaders_["lightpass"].Bc->GetBufferSize(),
+        nullptr, &(pShaders_["lightpass"].Shader));
 }
 
 void ResourceFactory::DestroyResources()
