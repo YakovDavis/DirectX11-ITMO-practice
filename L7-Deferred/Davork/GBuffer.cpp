@@ -43,15 +43,21 @@ void GBuffer::Initialize()
     res = game_->GetDevice()->CreateRenderTargetView(albedoBuffer_.Get(), &albedoRtvDesc, albedoRtv_.GetAddressOf());
 
     D3D11_TEXTURE2D_DESC normalBuffDesc = baseBuffDesc;
+    normalBuffDesc.Format = DXGI_FORMAT_R8G8B8A8_SNORM;
     D3D11_SHADER_RESOURCE_VIEW_DESC normalSrvDesc = baseSrvDesc;
+    normalSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_SNORM;
     D3D11_RENDER_TARGET_VIEW_DESC normalRtvDesc = baseRtvDesc;
+    normalRtvDesc.Format = DXGI_FORMAT_R8G8B8A8_SNORM;
     res = game_->GetDevice()->CreateTexture2D(&normalBuffDesc, nullptr, normalBuffer_.GetAddressOf());
-    res = game_->GetDevice()->CreateShaderResourceView(normalBuffer_.Get(), &albedoSrvDesc, normalSrv_.GetAddressOf());
+    res = game_->GetDevice()->CreateShaderResourceView(normalBuffer_.Get(), &normalSrvDesc, normalSrv_.GetAddressOf());
     res = game_->GetDevice()->CreateRenderTargetView(normalBuffer_.Get(), &normalRtvDesc, normalRtv_.GetAddressOf());
 
     D3D11_TEXTURE2D_DESC positionBuffDesc = baseBuffDesc;
+    positionBuffDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     D3D11_SHADER_RESOURCE_VIEW_DESC positionSrvDesc = baseSrvDesc;
+    positionSrvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     D3D11_RENDER_TARGET_VIEW_DESC positionRtvDesc = baseRtvDesc;
+    positionRtvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     res = game_->GetDevice()->CreateTexture2D(&positionBuffDesc, nullptr, positionBuffer_.GetAddressOf());
     res = game_->GetDevice()->CreateShaderResourceView(positionBuffer_.Get(), &positionSrvDesc, positionSrv_.GetAddressOf());
     res = game_->GetDevice()->CreateRenderTargetView(positionBuffer_.Get(), &positionRtvDesc, positionRtv_.GetAddressOf());

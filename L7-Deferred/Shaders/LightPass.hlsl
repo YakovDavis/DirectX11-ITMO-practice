@@ -25,7 +25,7 @@ cbuffer cbCascade : register(b1)
 };
 
 Texture2D<float4> DiffuseTex : register(t0);
-Texture2D<float3> WorldPositions : register(t1);
+Texture2D<float3> ViewPositions : register(t1);
 Texture2D<float3> Normals : register(t2);
 Texture2DArray CascadeShadowMap : register(t3);
 SamplerComparisonState DepthSampler : register(s0);
@@ -42,5 +42,24 @@ PS_IN VSMain(uint id: SV_VertexID)
 
 float4 PSMain(PS_IN input) : SV_Target
 {
-	return DiffuseTex.Load(int3(input.pos.xy, 0));
+	float3 norm = normalize(Normals.Load(int3(input.pos.xy, 0)));
+	
+	//float shadow = ShadowCalculation(input.worldPos, input.viewPos, dot(norm, lightPos));
+	
+	float4 ambient = ambientSpecularPowType.x * float4(lightColor.xyz, 1.0f);
+	float4 objColor = float4(DiffuseTex.Load(int3(input.pos.xy, 0)).xyz, 1.0f);
+
+	float diff = max(dot(norm, lightPos.xyz), 0.0f);
+	float4 diffuse = diff * float4(lightColor.xyz, 1.0f);
+
+	float3 reflectDir = reflect(-lightPos.xyz, norm);
+	float3 viewDir = normalize(-ViewPositions.Load(int3(input.pos.xy, 0)).xyz);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), ambientSpecularPowType.z);
+	float4 specular = objColor.w * spec * float4(lightColor.xyz, 1.0f);
+
+	float4 result = (ambient + (1.0f/* - shadow*/) * (diffuse + specular)) * objColor;
+
+	//return float4(viewDir.xyz*0.5 + 0.5, 1.0f);
+	
+	return float4(result.xyz, 1.0f);
 }

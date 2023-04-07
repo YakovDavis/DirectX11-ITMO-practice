@@ -12,13 +12,13 @@ struct PS_IN
 	float4 pos : SV_POSITION;
  	float4 tex : TEXCOORD;
 	float4 normal : NORMAL;
-	float4 worldPos : WORLDPOS;
+	float4 viewPos : WORLDPOS;
 };
 
 struct GBuffer
 {
 	float4 DiffuseSpec : SV_Target0;
-	float3 WorldPos : SV_Target1;
+	float3 ViewPos : SV_Target1;
 	float3 Normal : SV_Target1;
 };
 
@@ -40,11 +40,12 @@ PS_IN VSMain(VS_IN input)
 	output.pos = mul(float4(input.pos.xyz, 1.0f), gWorldViewProj);
 	output.tex = input.tex;
 	output.normal = mul(float4(input.normal.xyz, 0.0f), gInvTrWorldView);
-	output.worldPos = mul(float4(input.pos.xyz, 1.0f), gWorld);
+	output.viewPos = mul(float4(input.pos.xyz, 1.0f), gWorldView);
 	
 	return output;
 }
 
+[earlydepthstencil]
 GBuffer PSMain(PS_IN input) : SV_Target
 {
 	GBuffer result = (GBuffer)0;
@@ -53,7 +54,7 @@ GBuffer PSMain(PS_IN input) : SV_Target
 	
 	result.DiffuseSpec.xyz = objColor.xyz;
 	result.DiffuseSpec.w = 0.5f;
-	result.WorldPos = input.worldPos;
+	result.ViewPos = input.viewPos.xyz;
 	result.Normal = normalize(input.normal.xyz);
 	
 	return result;

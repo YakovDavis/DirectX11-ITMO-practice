@@ -130,7 +130,7 @@ float4 PSMain(PS_IN input) : SV_Target
 	float4 diffuse = diff * float4(lightColor.xyz, 1.0f);
 
 	float4 reflectDir = reflect(-lightPos, norm);
-	float3 viewDir = - normalize(input.viewPos.xyz);
+	float3 viewDir = -normalize(input.viewPos.xyz);
 	float spec = pow(max(dot(viewDir, reflectDir.xyz), 0.0f), ambientSpecularPowType.z);
 	float4 specular = ambientSpecularPowType.y * spec * float4(lightColor.xyz, 1.0f);
 

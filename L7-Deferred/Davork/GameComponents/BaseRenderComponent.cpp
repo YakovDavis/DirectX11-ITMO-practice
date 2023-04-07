@@ -232,7 +232,7 @@ void BaseRenderComponent::Update()
 	objData.WorldViewProj = world * game->GetCamera()->GetViewProj();
 	objData.World = world;
 	objData.WorldView = world * game->GetCamera()->GetView();
-	objData.InvTrWorldView = (Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation)).Invert().Transpose() * game->GetCamera()->GetView();
+	objData.InvTrWorldView = (world * game->GetCamera()->GetView()).Invert().Transpose();
 
 	CbDataCascade cascadeData = {};
 	auto tmp = game->GetDLight()->GetLightSpaceMatrices();

@@ -43,6 +43,8 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer_;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rastState_;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> defaultDepthState_;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> quadDepthState_;
 	int debugAnnotation_{};
 	Microsoft::WRL::ComPtr<ID3D11Device> device_;
 	HINSTANCE instance_;

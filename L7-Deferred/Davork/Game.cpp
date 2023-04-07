@@ -328,6 +328,7 @@ void Game::DestroyResources()
 void Game::Draw()
 {
 	context_->ClearState();
+	context_->OMSetDepthStencilState(defaultDepthState_.Get(), 0);
 
 	const auto rtvs = new ID3D11RenderTargetView*[3];
 	rtvs[0] = gBuffer_.albedoRtv_.Get();
@@ -349,6 +350,7 @@ void Game::Draw()
 	context_->ClearState();
 
 	context_->RSSetState(rastState_.Get());
+	context_->OMSetDepthStencilState(quadDepthState_.Get(), 0);
 
 	D3D11_VIEWPORT viewport;
 	viewport.Width = static_cast<float>(display_->ClientWidth);
@@ -361,14 +363,16 @@ void Game::Draw()
 	context_->RSSetViewports(1, &viewport);
 	
 	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), nullptr);
-	
+
+	GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context_->VSSetShader(ResourceFactory::GetVertexShader("lightpass"), nullptr, 0);
 	context_->PSSetShader(ResourceFactory::GetPixelShader("lightpass"), nullptr, 0);
 	context_->PSSetShaderResources(0, 1, gBuffer_.albedoSrv_.GetAddressOf());
 	context_->PSSetShaderResources(1, 1, gBuffer_.positionSrv_.GetAddressOf());
 	context_->PSSetShaderResources(2, 1, gBuffer_.normalSrv_.GetAddressOf());
+	context_->PSSetConstantBuffers(0, 1, perSceneCBuffer_.GetAddressOf());
 
-	context_->Draw(9, 0);
+	context_->Draw(4, 0);
 }
 
 void Game::EndFrame()
@@ -468,6 +472,22 @@ void Game::PrepareResources()
 	rastDesc.DepthClipEnable = true;
 
 	res = device_->CreateRasterizerState(&rastDesc, rastState_.GetAddressOf());
+
+	D3D11_DEPTH_STENCIL_DESC defaultDepthDesc = {};
+
+	defaultDepthDesc.DepthEnable = true;
+	defaultDepthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	defaultDepthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	res = device_->CreateDepthStencilState(&defaultDepthDesc, defaultDepthState_.GetAddressOf());
+
+	D3D11_DEPTH_STENCIL_DESC quadDepthDesc = {};
+
+	defaultDepthDesc.DepthEnable = true;
+	defaultDepthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	defaultDepthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	res = device_->CreateDepthStencilState(&quadDepthDesc, quadDepthState_.GetAddressOf());
 }
 
 void Game::Update()
