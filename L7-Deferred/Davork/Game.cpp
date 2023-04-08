@@ -526,9 +526,9 @@ void Game::Update()
 	auto tmp = Vector4(20.0f, 50.0f, 20.0f, 0.0f);
 	tmp.Normalize();
 	dLight_.SetDirection(tmp);
-	sceneData_.LightPos = Vector4::Transform(dLight_.GetDirection(), GetCamera()->GetView());
-	sceneData_.LightPos.Normalize();
-	sceneData_.LightColor = dLight_.GetColor();
+	sceneData_.DLightDir = Vector4::Transform(dLight_.GetDirection(), GetCamera()->GetView());
+	sceneData_.DLightDir.Normalize();
+	sceneData_.DLightColor = dLight_.GetColor();
 	sceneData_.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 0);
 	sceneData_.T = Matrix(
 		0.5f, 0.0f, 0.0f, 0.0f,
@@ -536,6 +536,18 @@ void Game::Update()
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.0f, 1.0f);
 	sceneData_.ViewMatrix = GetCamera()->GetView();
+	sceneData_.PLightPos[0] = Vector4(3, 1, 3, 1);
+	sceneData_.PLightPos[0] = Vector4::Transform(sceneData_.PLightPos[0], GetCamera()->GetView());
+	sceneData_.PLightPos[1] = Vector4(-3, 1, 3, 1);
+	sceneData_.PLightPos[1] = Vector4::Transform(sceneData_.PLightPos[1], GetCamera()->GetView());
+	sceneData_.PLightPos[2] = Vector4(3, 1, -3, 1);
+	sceneData_.PLightPos[2] = Vector4::Transform(sceneData_.PLightPos[2], GetCamera()->GetView());
+	sceneData_.PLightPos[3] = Vector4(-3, 1, -3, 1);
+	sceneData_.PLightPos[3] = Vector4::Transform(sceneData_.PLightPos[3], GetCamera()->GetView());
+	sceneData_.PLightColor[0] = Vector4(1, 0, 0, 1) * 2.0f;
+	sceneData_.PLightColor[1] = Vector4(0, 1, 0, 1) * 2.0f;
+	sceneData_.PLightColor[2] = Vector4(0, 0, 1, 1) * 2.0f;
+	sceneData_.PLightColor[3] = Vector4(1, 1, 1, 1) * 2.0f;
 
 	CbDataCascade cascadeData = {};
 	auto tmp1 = GetDLight()->GetLightSpaceMatrices();
