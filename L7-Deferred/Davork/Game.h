@@ -23,6 +23,13 @@
 class Game
 {
 	friend class DisplayWin32;
+
+public:
+	struct CbDataCascade
+	{
+		DirectX::SimpleMath::Matrix ViewProj[5];
+		DirectX::SimpleMath::Vector4 Distance;
+	};
 	
 	void CreateBackBuffer();
 	void CreateDepthStencilBuffer();
@@ -58,7 +65,9 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexArr_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthShadowDsv_;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthShadowSrv_;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> depthSamplerState_;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> perSceneCBuffer_;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> cascadeCBuffer_;
 	PerSceneCb sceneData_{};
 	DirectionalLight dLight_;
 	bool screenResized_{};
@@ -84,6 +93,7 @@ public:
 	ID3D11DeviceContext* GetContext() const;
 	ID3D11ShaderResourceView* GetCsm() const;
 	ID3D11Buffer* const* GetPerSceneCb() const;
+	ID3D11Buffer* const* GetCascadeCb() const;
 	DirectionalLight* GetDLight();
 	InputDevice* GetInputDevice() const;
 	Camera* GetCamera() const;

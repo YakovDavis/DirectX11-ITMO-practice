@@ -102,7 +102,7 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 
 	// PCF
 	float shadow = 0.0f;
-	float2 texelSize = 1.0f / 1024.0f;
+	float2 texelSize = 1.0f / 2048.0f;
 	for (int x = -1; x <= 1; ++x)
 	{
 		for (int y = -1; y <= 1; ++y)

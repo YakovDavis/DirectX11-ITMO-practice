@@ -21,11 +21,7 @@ public:
         DirectX::SimpleMath::Matrix WorldView;
         DirectX::SimpleMath::Matrix InvTrWorldView;
     };
-    struct CbDataCascade
-    {
-        DirectX::SimpleMath::Matrix ViewProj[5];
-        DirectX::SimpleMath::Vector4 Distance;
-    };
+    
 protected:
     Microsoft::WRL::ComPtr<ID3D11InputLayout> layout_;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> rastState_;
@@ -45,6 +41,7 @@ protected:
     Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState_;
     Microsoft::WRL::ComPtr<ID3D11SamplerState> depthSamplerState_;
     bool isShadowCasting_;
+    
 public:
     explicit BaseRenderComponent(Game* game);
     ~BaseRenderComponent() override = default;

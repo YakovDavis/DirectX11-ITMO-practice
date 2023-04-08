@@ -111,16 +111,6 @@ void BaseRenderComponent::Initialize()
 
 	game->GetDevice()->CreateBuffer(&constBufPerObjDesc, nullptr, constBuffers_[0].GetAddressOf());
 
-	D3D11_BUFFER_DESC constBufCascadeDesc;
-	constBufCascadeDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constBufCascadeDesc.Usage = D3D11_USAGE_DEFAULT;
-	constBufCascadeDesc.CPUAccessFlags = 0;
-	constBufCascadeDesc.MiscFlags = 0;
-	constBufCascadeDesc.StructureByteStride = 0;
-	constBufCascadeDesc.ByteWidth = sizeof(Matrix) * 5 + sizeof(Vector4);
-
-	game->GetDevice()->CreateBuffer(&constBufCascadeDesc, nullptr, constBuffers_[1].GetAddressOf());
-
 	D3D11_SAMPLER_DESC samplerStateDesc = {};
 	samplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -201,8 +191,8 @@ void BaseRenderComponent::PrepareFrame()
 	game->GetContext()->RSSetState(rastState_.Get());
 
 	D3D11_VIEWPORT viewport;
-	viewport.Width = 1024.0f;
-	viewport.Height = 1024.0f;
+	viewport.Width = 2048.0f;
+	viewport.Height = 2048.0f;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0;
@@ -218,7 +208,7 @@ void BaseRenderComponent::PrepareFrame()
 	game->GetContext()->VSSetConstantBuffers(0, 1, constBuffers_[0].GetAddressOf());
 	game->GetContext()->PSSetShader(nullptr, nullptr, 0);
 	game->GetContext()->GSSetShader(ResourceFactory::GetGeometryShader("csm"), nullptr, 0);
-	game->GetContext()->GSSetConstantBuffers(0, 1, constBuffers_[1].GetAddressOf());
+	game->GetContext()->GSSetConstantBuffers(0, 1, game->GetCascadeCb());
 
 	game->GetContext()->DrawIndexed(indices_.size(), 0, 0);
 }
@@ -234,14 +224,5 @@ void BaseRenderComponent::Update()
 	objData.WorldView = world * game->GetCamera()->GetView();
 	objData.InvTrWorldView = (world * game->GetCamera()->GetView()).Invert().Transpose();
 
-	CbDataCascade cascadeData = {};
-	auto tmp = game->GetDLight()->GetLightSpaceMatrices();
-	for (int i = 0; i < 5; ++i)
-	{
-		cascadeData.ViewProj[i] = tmp[i];
-	}
-	cascadeData.Distance = game->GetDLight()->GetShadowCascadeDistances();
-
 	game->GetContext()->UpdateSubresource(constBuffers_[0].Get(), 0, nullptr, &objData, 0, 0);
-	game->GetContext()->UpdateSubresource(constBuffers_[1].Get(), 0, nullptr, &cascadeData, 0, 0);
 }

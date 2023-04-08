@@ -115,8 +115,8 @@ void Game::CreateDepthStencilBuffer()
 void Game::CreateCsmDepthTextureArray()
 {
 	D3D11_TEXTURE2D_DESC depthDescription = {};
-	depthDescription.Width = 1024;
-	depthDescription.Height = 1024;
+	depthDescription.Width = 2048;
+	depthDescription.Height = 2048;
 	depthDescription.ArraySize = 5;
 	depthDescription.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
 	depthDescription.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -296,6 +296,11 @@ ID3D11Buffer* const* Game::GetPerSceneCb() const
 	return perSceneCBuffer_.GetAddressOf();
 }
 
+ID3D11Buffer* const* Game::GetCascadeCb() const
+{
+	return cascadeCBuffer_.GetAddressOf();
+}
+
 DirectionalLight* Game::GetDLight()
 {
 	return &dLight_;
@@ -370,7 +375,10 @@ void Game::Draw()
 	context_->PSSetShaderResources(0, 1, gBuffer_.albedoSrv_.GetAddressOf());
 	context_->PSSetShaderResources(1, 1, gBuffer_.positionSrv_.GetAddressOf());
 	context_->PSSetShaderResources(2, 1, gBuffer_.normalSrv_.GetAddressOf());
+	context_->PSSetShaderResources(3, 1, depthShadowSrv_.GetAddressOf());
 	context_->PSSetConstantBuffers(0, 1, perSceneCBuffer_.GetAddressOf());
+	context_->PSSetConstantBuffers(1, 1, cascadeCBuffer_.GetAddressOf());
+	context_->PSSetSamplers(0, 1, depthSamplerState_.GetAddressOf());
 
 	context_->Draw(4, 0);
 }
@@ -464,6 +472,16 @@ void Game::PrepareResources()
 
 	GetDevice()->CreateBuffer(&constBufPerSceneDesc, nullptr, perSceneCBuffer_.GetAddressOf());
 
+	D3D11_BUFFER_DESC constBufCascadeDesc;
+	constBufCascadeDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constBufCascadeDesc.Usage = D3D11_USAGE_DEFAULT;
+	constBufCascadeDesc.CPUAccessFlags = 0;
+	constBufCascadeDesc.MiscFlags = 0;
+	constBufCascadeDesc.StructureByteStride = 0;
+	constBufCascadeDesc.ByteWidth = sizeof(Matrix) * 5 + sizeof(Vector4);
+
+	GetDevice()->CreateBuffer(&constBufCascadeDesc, nullptr, cascadeCBuffer_.GetAddressOf());
+
 	CD3D11_RASTERIZER_DESC rastDesc = {};
 	
 	rastDesc.CullMode = D3D11_CULL_NONE;
@@ -488,6 +506,19 @@ void Game::PrepareResources()
 	defaultDepthDesc.DepthFunc = D3D11_COMPARISON_LESS;
 
 	res = device_->CreateDepthStencilState(&quadDepthDesc, quadDepthState_.GetAddressOf());
+
+	D3D11_SAMPLER_DESC depthSamplerStateDesc = {};
+	depthSamplerStateDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	depthSamplerStateDesc.ComparisonFunc = D3D11_COMPARISON_GREATER_EQUAL;
+	depthSamplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	depthSamplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	depthSamplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	depthSamplerStateDesc.BorderColor[0] = 1.0f;
+	depthSamplerStateDesc.BorderColor[1] = 1.0f;
+	depthSamplerStateDesc.BorderColor[2] = 1.0f;
+	depthSamplerStateDesc.BorderColor[3] = 1.0f;
+
+	res = GetDevice()->CreateSamplerState(&depthSamplerStateDesc, depthSamplerState_.GetAddressOf());
 }
 
 void Game::Update()
@@ -504,7 +535,19 @@ void Game::Update()
 		0.0f, -0.5f, 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.0f, 1.0f);
+	sceneData_.ViewMatrix = GetCamera()->GetView();
+
+	CbDataCascade cascadeData = {};
+	auto tmp1 = GetDLight()->GetLightSpaceMatrices();
+	for (int i = 0; i < 5; ++i)
+	{
+		cascadeData.ViewProj[i] = tmp1[i];
+	}
+	cascadeData.Distance = GetDLight()->GetShadowCascadeDistances();
+	
 	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
+	GetContext()->UpdateSubresource(cascadeCBuffer_.Get(), 0, nullptr, &cascadeData, 0, 0);
+	
 	camera_->UpdateMatrix();
 	for (const auto c : components_)
 	{
