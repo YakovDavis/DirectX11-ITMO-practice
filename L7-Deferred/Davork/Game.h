@@ -66,6 +66,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthShadowDsv_;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthShadowSrv_;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> depthSamplerState_;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> blendState_;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> perSceneCBuffer_;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> cascadeCBuffer_;
 	PerSceneCb sceneData_{};

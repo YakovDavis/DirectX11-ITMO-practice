@@ -368,6 +368,7 @@ void Game::Draw()
 	context_->RSSetViewports(1, &viewport);
 	
 	context_->OMSetRenderTargets(1, renderView_.GetAddressOf(), nullptr);
+	context_->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
 	GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	context_->VSSetShader(ResourceFactory::GetVertexShader("lightpass"), nullptr, 0);
@@ -379,6 +380,42 @@ void Game::Draw()
 	context_->PSSetConstantBuffers(0, 1, perSceneCBuffer_.GetAddressOf());
 	context_->PSSetConstantBuffers(1, 1, cascadeCBuffer_.GetAddressOf());
 	context_->PSSetSamplers(0, 1, depthSamplerState_.GetAddressOf());
+
+	context_->Draw(4, 0);
+
+	context_->OMSetBlendState(blendState_.Get(), nullptr, 0xffffffff);
+
+	sceneData_.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 1);
+	
+	sceneData_.LightPos = Vector4(3, 1, 3, 1);
+	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
+	sceneData_.LightColor = Vector4(1, 0, 0, 1) * 2.0f;
+
+	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
+
+	context_->Draw(4, 0);
+
+	sceneData_.LightPos = Vector4(-3, 1, 3, 1);
+	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
+	sceneData_.LightColor = Vector4(0, 1, 0, 1) * 2.0f;
+
+	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
+
+	context_->Draw(4, 0);
+
+	sceneData_.LightPos = Vector4(3, 1, -3, 1);
+	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
+	sceneData_.LightColor = Vector4(0, 0, 1, 1) * 2.0f;
+
+	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
+
+	context_->Draw(4, 0);
+	
+	sceneData_.LightPos = Vector4(-3, 1, -3, 1);
+	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
+	sceneData_.LightColor = Vector4(1, 1, 1, 1) * 2.0f;
+
+	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
 
 	context_->Draw(4, 0);
 }
@@ -519,6 +556,20 @@ void Game::PrepareResources()
 	depthSamplerStateDesc.BorderColor[3] = 1.0f;
 
 	res = GetDevice()->CreateSamplerState(&depthSamplerStateDesc, depthSamplerState_.GetAddressOf());
+
+	D3D11_BLEND_DESC blendDesc = {};
+	
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE; //D3D11_BLEND_SRC_COLOR;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE; //D3D11_BLEND_BLEND_FACTOR;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D10_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.AlphaToCoverageEnable = false;
+
+	res = GetDevice()->CreateBlendState(&blendDesc, blendState_.GetAddressOf());
 }
 
 void Game::Update()
@@ -526,9 +577,9 @@ void Game::Update()
 	auto tmp = Vector4(20.0f, 50.0f, 20.0f, 0.0f);
 	tmp.Normalize();
 	dLight_.SetDirection(tmp);
-	sceneData_.DLightDir = Vector4::Transform(dLight_.GetDirection(), GetCamera()->GetView());
-	sceneData_.DLightDir.Normalize();
-	sceneData_.DLightColor = dLight_.GetColor();
+	sceneData_.LightPos = Vector4::Transform(dLight_.GetDirection(), GetCamera()->GetView());
+	sceneData_.LightPos.Normalize();
+	sceneData_.LightColor = dLight_.GetColor();
 	sceneData_.AmbientSpecularPowType = Vector4(0.4f, 0.5f, 32, 0);
 	sceneData_.T = Matrix(
 		0.5f, 0.0f, 0.0f, 0.0f,
@@ -536,7 +587,7 @@ void Game::Update()
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.0f, 1.0f);
 	sceneData_.ViewMatrix = GetCamera()->GetView();
-	sceneData_.PLightPos[0] = Vector4(3, 1, 3, 1);
+	/*sceneData_.PLightPos[0] = Vector4(3, 1, 3, 1);
 	sceneData_.PLightPos[0] = Vector4::Transform(sceneData_.PLightPos[0], GetCamera()->GetView());
 	sceneData_.PLightPos[1] = Vector4(-3, 1, 3, 1);
 	sceneData_.PLightPos[1] = Vector4::Transform(sceneData_.PLightPos[1], GetCamera()->GetView());
@@ -547,7 +598,7 @@ void Game::Update()
 	sceneData_.PLightColor[0] = Vector4(1, 0, 0, 1) * 2.0f;
 	sceneData_.PLightColor[1] = Vector4(0, 1, 0, 1) * 2.0f;
 	sceneData_.PLightColor[2] = Vector4(0, 0, 1, 1) * 2.0f;
-	sceneData_.PLightColor[3] = Vector4(1, 1, 1, 1) * 2.0f;
+	sceneData_.PLightColor[3] = Vector4(1, 1, 1, 1) * 2.0f;*/
 
 	CbDataCascade cascadeData = {};
 	auto tmp1 = GetDLight()->GetLightSpaceMatrices();
