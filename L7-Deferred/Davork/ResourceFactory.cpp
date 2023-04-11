@@ -88,6 +88,7 @@ void ResourceFactory::Initialize(Game* game)
     vShaders_.insert({"base", {nullptr, nullptr}});
     vShaders_.insert({"gbuffer", {nullptr, nullptr}});
     vShaders_.insert({"lightpass", {nullptr, nullptr}});
+    vShaders_.insert({"lightpassvolume", {nullptr, nullptr}});
     vShaders_.insert({"csm", {nullptr, nullptr}});
 
     gShaders_.insert({ "csm", {nullptr, nullptr} });
@@ -95,6 +96,7 @@ void ResourceFactory::Initialize(Game* game)
     pShaders_.insert({"base", {nullptr, nullptr}});
     pShaders_.insert({"gbuffer", {nullptr, nullptr}});
     pShaders_.insert({"lightpass", {nullptr, nullptr}});
+    pShaders_.insert({"lightpassvolume", {nullptr, nullptr}});
     
     ID3DBlob* errorVertexCode = nullptr;
     auto res = D3DCompileFromFile(L"./Shaders/Base3d.hlsl",
@@ -142,6 +144,17 @@ void ResourceFactory::Initialize(Game* game)
         D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
         0,
         &(vShaders_["lightpass"].Bc),
+        &errorVertexCode);
+
+    errorVertexCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/LightPassVolume.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "VSMain",
+        "vs_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(vShaders_["lightpassvolume"].Bc),
         &errorVertexCode);
 
     errorVertexCode = nullptr;
@@ -231,6 +244,17 @@ void ResourceFactory::Initialize(Game* game)
         &(pShaders_["lightpass"].Bc),
         &errorPixelCode);
 
+    errorPixelCode = nullptr;
+    res = D3DCompileFromFile(L"./Shaders/LightPassVolume.hlsl",
+        nullptr /*macros*/,
+        nullptr /*include*/,
+        "PSMain",
+        "ps_5_0",
+        D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+        0,
+        &(pShaders_["lightpassvolume"].Bc),
+        &errorPixelCode);
+
     res = game->GetDevice()->CreateVertexShader(
         vShaders_["base"].Bc->GetBufferPointer(),
         vShaders_["base"].Bc->GetBufferSize(),
@@ -245,6 +269,11 @@ void ResourceFactory::Initialize(Game* game)
         vShaders_["lightpass"].Bc->GetBufferPointer(),
         vShaders_["lightpass"].Bc->GetBufferSize(),
         nullptr, &(vShaders_["lightpass"].Shader));
+
+    res = game->GetDevice()->CreateVertexShader(
+        vShaders_["lightpassvolume"].Bc->GetBufferPointer(),
+        vShaders_["lightpassvolume"].Bc->GetBufferSize(),
+        nullptr, &(vShaders_["lightpassvolume"].Shader));
 
     res = game->GetDevice()->CreateVertexShader(
         vShaders_["csm"].Bc->GetBufferPointer(),
@@ -270,6 +299,11 @@ void ResourceFactory::Initialize(Game* game)
         pShaders_["lightpass"].Bc->GetBufferPointer(),
         pShaders_["lightpass"].Bc->GetBufferSize(),
         nullptr, &(pShaders_["lightpass"].Shader));
+
+    res = game->GetDevice()->CreatePixelShader(
+        pShaders_["lightpassvolume"].Bc->GetBufferPointer(),
+        pShaders_["lightpassvolume"].Bc->GetBufferSize(),
+        nullptr, &(pShaders_["lightpassvolume"].Shader));
 }
 
 void ResourceFactory::DestroyResources()

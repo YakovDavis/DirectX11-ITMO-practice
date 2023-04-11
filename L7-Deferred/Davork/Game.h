@@ -20,6 +20,8 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib")
 
+class LightVolumeComponent;
+
 class Game
 {
 	friend class DisplayWin32;
@@ -71,6 +73,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> cascadeCBuffer_;
 	PerSceneCb sceneData_{};
 	DirectionalLight dLight_;
+	std::shared_ptr<LightVolumeComponent> lightVolumeComponent_;
 	bool screenResized_{};
 	float startTime_{};
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain_;

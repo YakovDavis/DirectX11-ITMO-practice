@@ -279,6 +279,7 @@
     <ClCompile Include="Davork\GameComponents\BaseRenderComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\DebugAxisAnchorComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\GridComponent.cpp" />
+    <ClCompile Include="Davork\GameComponents\LightVolumeComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\MeshRenderComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\QuadComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\SphereComponent.cpp" />
@@ -801,6 +802,7 @@
     </ClCompile>
     <ClCompile Include="KatamariGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
+    <None Include="Shaders\LightPassVolume.hlsl" />
     <None Include="Shaders\LightPass.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -825,6 +827,7 @@
     <ClInclude Include="Davork\GameComponents\BaseRenderComponent.h" />
     <ClInclude Include="Davork\GameComponents\DebugAxisAnchorComponent.h" />
     <ClInclude Include="Davork\GameComponents\GridComponent.h" />
+    <ClInclude Include="Davork\GameComponents\LightVolumeComponent.h" />
     <ClInclude Include="Davork\GameComponents\MeshRenderComponent.h" />
     <ClInclude Include="Davork\GameComponents\QuadComponent.h" />
     <ClInclude Include="Davork\GameComponents\SphereComponent.h" />

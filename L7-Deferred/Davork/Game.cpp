@@ -1,6 +1,7 @@
 #include "Game.h"
 
 #include "ResourceFactory.h"
+#include "GameComponents/LightVolumeComponent.h"
 
 using namespace DirectX;
 using namespace SimpleMath;
@@ -192,6 +193,8 @@ Game::Game(LPCWSTR name, int screenWidth, int screenHeight) : isExitRequested_(f
 
 	camera_ = std::make_shared<Camera>();
 	camera_->AspectRatio = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
+
+	lightVolumeComponent_ = std::make_shared<LightVolumeComponent>(this);
 }
 
 Game::~Game()  // NOLINT(modernize-use-equals-default)
@@ -200,6 +203,7 @@ Game::~Game()  // NOLINT(modernize-use-equals-default)
 	{
 		c->~GameComponent();
 	}
+	lightVolumeComponent_->~LightVolumeComponent();
 }
 
 void Game::Exit()
@@ -327,6 +331,7 @@ void Game::DestroyResources()
 	{
 		c->DestroyResources();
 	}
+	lightVolumeComponent_->DestroyResources();
 	ResourceFactory::DestroyResources();
 }
 
@@ -392,8 +397,11 @@ void Game::Draw()
 	sceneData_.LightColor = Vector4(1, 0, 0, 1) * 2.0f;
 
 	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
-
-	context_->Draw(4, 0);
+	
+	lightVolumeComponent_->SetSize(10.0f);
+	lightVolumeComponent_->SetPosition(Vector3(3, 1, 3));
+	lightVolumeComponent_->Update();
+	lightVolumeComponent_->Draw();
 
 	sceneData_.LightPos = Vector4(-3, 1, 3, 1);
 	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
@@ -401,7 +409,10 @@ void Game::Draw()
 
 	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
 
-	context_->Draw(4, 0);
+	lightVolumeComponent_->SetSize(10.0f);
+	lightVolumeComponent_->SetPosition(Vector3(-3, 1, 3));
+	lightVolumeComponent_->Update();
+	lightVolumeComponent_->Draw();
 
 	sceneData_.LightPos = Vector4(3, 1, -3, 1);
 	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
@@ -409,15 +420,21 @@ void Game::Draw()
 
 	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
 
-	context_->Draw(4, 0);
+	lightVolumeComponent_->SetSize(10.0f);
+	lightVolumeComponent_->SetPosition(Vector3(3, 1, -3));
+	lightVolumeComponent_->Update();
+	lightVolumeComponent_->Draw();
 	
 	sceneData_.LightPos = Vector4(-3, 1, -3, 1);
 	sceneData_.LightPos = Vector4::Transform(sceneData_.LightPos, GetCamera()->GetView());
 	sceneData_.LightColor = Vector4(1, 1, 1, 1) * 2.0f;
-
+	
 	GetContext()->UpdateSubresource(perSceneCBuffer_.Get(), 0, nullptr, &sceneData_, 0, 0);
 
-	context_->Draw(4, 0);
+	lightVolumeComponent_->SetSize(10.0f);
+	lightVolumeComponent_->SetPosition(Vector3(-3, 1, -3));
+	lightVolumeComponent_->Update();
+	lightVolumeComponent_->Draw();
 }
 
 void Game::EndFrame()
@@ -570,6 +587,8 @@ void Game::PrepareResources()
 	blendDesc.AlphaToCoverageEnable = false;
 
 	res = GetDevice()->CreateBlendState(&blendDesc, blendState_.GetAddressOf());
+
+	lightVolumeComponent_->Initialize();
 }
 
 void Game::Update()

@@ -4,10 +4,25 @@
 #define CASCADE_COUNT 4
 #endif
 
+struct VS_IN
+{
+	float4 pos : POSITION0;
+	float4 tex : TEXCOORD0;
+	float4 normal : NORMAL0;
+};
+
 struct PS_IN
 {
 	float4 pos : SV_POSITION;
  	float2 tex : TEXCOORD;
+};
+
+cbuffer cbPerObject : register(b0)
+{
+	float4x4 gWorldViewProj;
+	float4x4 gWorld;
+	float4x4 gWorldView;
+	float4x4 gInvTrWorldView;
 };
 
 cbuffer cbPerScene : register(b0)
@@ -31,12 +46,11 @@ Texture2D<float3> Normals : register(t2);
 Texture2DArray CascadeShadowMap : register(t3);
 SamplerComparisonState DepthSampler : register(s0);
 
-PS_IN VSMain(uint id: SV_VertexID)
+PS_IN VSMain(VS_IN input)
 {
 	PS_IN output = (PS_IN)0;
-
-	output.tex = float2(id & 1, (id & 2) >> 1);
-	output.pos = float4(output.tex * float2(2, -2) + float2(-1, 1), 0, 1);
+	
+	output.pos = mul(float4(input.pos.xyz, 1.0f), gWorldViewProj);
 	
 	return output;
 }
@@ -70,7 +84,7 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 		return 0.0f;
 	}
 
-	float bias = max(0.02f * (1.0f - dotN), 0.005f);
+	float bias = max(0.01f * (1.0f - dotN), 0.005f);
 	const float biasModifier = 0.5f;
 	if (layer == CASCADE_COUNT)
 	{
@@ -98,6 +112,9 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 
 float4 PSMain(PS_IN input) : SV_Target
 {
+	input.tex = mul(float4(input.pos.xyz, 1.0f), gT).xy;
+	input.pos = float4(input.tex * float2(2, -2) + float2(-1, 1), 0, 1);
+	
 	float3 norm = normalize(Normals.Load(int3(input.pos.xy, 0)));
 	float4 worldPos = float4(WorldPositions.Load(int3(input.pos.xy, 0)).xyz, 1.0f);
 	float4 viewPos = mul(worldPos, gView);
