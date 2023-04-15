@@ -606,18 +606,6 @@ void Game::Update()
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.0f, 1.0f);
 	sceneData_.ViewMatrix = GetCamera()->GetView();
-	/*sceneData_.PLightPos[0] = Vector4(3, 1, 3, 1);
-	sceneData_.PLightPos[0] = Vector4::Transform(sceneData_.PLightPos[0], GetCamera()->GetView());
-	sceneData_.PLightPos[1] = Vector4(-3, 1, 3, 1);
-	sceneData_.PLightPos[1] = Vector4::Transform(sceneData_.PLightPos[1], GetCamera()->GetView());
-	sceneData_.PLightPos[2] = Vector4(3, 1, -3, 1);
-	sceneData_.PLightPos[2] = Vector4::Transform(sceneData_.PLightPos[2], GetCamera()->GetView());
-	sceneData_.PLightPos[3] = Vector4(-3, 1, -3, 1);
-	sceneData_.PLightPos[3] = Vector4::Transform(sceneData_.PLightPos[3], GetCamera()->GetView());
-	sceneData_.PLightColor[0] = Vector4(1, 0, 0, 1) * 2.0f;
-	sceneData_.PLightColor[1] = Vector4(0, 1, 0, 1) * 2.0f;
-	sceneData_.PLightColor[2] = Vector4(0, 0, 1, 1) * 2.0f;
-	sceneData_.PLightColor[3] = Vector4(1, 1, 1, 1) * 2.0f;*/
 
 	CbDataCascade cascadeData = {};
 	auto tmp1 = GetDLight()->GetLightSpaceMatrices();
