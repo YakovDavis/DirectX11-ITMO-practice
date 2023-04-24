@@ -1,11 +1,4 @@
-//--------------------------------------------------------------------------------------
-// File: ComputeShaderSort11.hlsl
-//
-// This file contains the compute shaders to perform GPU sorting using DirectX 11.
-// 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License (MIT).
-//--------------------------------------------------------------------------------------
+#pragma pack_matrix(row_major)
 
 #define BITONIC_BLOCK_SIZE 512
 
@@ -25,13 +18,19 @@ cbuffer CB : register(b0)
 //--------------------------------------------------------------------------------------
 // Structured Buffers
 //--------------------------------------------------------------------------------------
-StructuredBuffer<unsigned int> Input : register(t0);
-RWStructuredBuffer<unsigned int> Data : register(u0);
+
+struct ParticleDepth
+{
+    uint Index;
+    float Depth;
+};
+
+RWStructuredBuffer<ParticleDepth> Data : register(u0);
 
 //--------------------------------------------------------------------------------------
 // Bitonic Sort Compute Shader
 //--------------------------------------------------------------------------------------
-groupshared unsigned int shared_data[BITONIC_BLOCK_SIZE];
+groupshared ParticleDepth shared_data[BITONIC_BLOCK_SIZE];
 
 [numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void BitonicSort(uint3 Gid : SV_GroupID,
@@ -46,9 +45,10 @@ void BitonicSort(uint3 Gid : SV_GroupID,
     // Sort the shared data
     for (unsigned int j = g_iLevel >> 1; j > 0; j >>= 1)
     {
-        unsigned int result = ((shared_data[GI & ~j] <= shared_data[GI | j]) == (bool)(g_iLevelMask & DTid.x)) ? shared_data[GI ^ j] : shared_data[GI];
+        bool result = ((shared_data[GI & ~j].Depth <= shared_data[GI | j].Depth) == (bool)(g_iLevelMask & DTid.x));
+        ParticleDepth tmp = shared_data[GI ^ j];
         GroupMemoryBarrierWithGroupSync();
-        shared_data[GI] = result;
+        if (result) shared_data[GI] = tmp;
         GroupMemoryBarrierWithGroupSync();
     }
 
@@ -59,7 +59,7 @@ void BitonicSort(uint3 Gid : SV_GroupID,
 //--------------------------------------------------------------------------------------
 // Matrix Transpose Compute Shader
 //--------------------------------------------------------------------------------------
-groupshared unsigned int transpose_shared_data[TRANSPOSE_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE];
+groupshared ParticleDepth transpose_shared_data[TRANSPOSE_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE];
 
 [numthreads(TRANSPOSE_BLOCK_SIZE, TRANSPOSE_BLOCK_SIZE, 1)]
 void MatrixTranspose(uint3 Gid : SV_GroupID,
@@ -67,7 +67,7 @@ void MatrixTranspose(uint3 Gid : SV_GroupID,
     uint3 GTid : SV_GroupThreadID,
     uint GI : SV_GroupIndex)
 {
-    transpose_shared_data[GI] = Input[DTid.y * g_iWidth + DTid.x];
+    transpose_shared_data[GI] = Data[DTid.y * g_iWidth + DTid.x];
     GroupMemoryBarrierWithGroupSync();
     uint2 XY = DTid.yx - GTid.yx + GTid.xy;
     Data[XY.y * g_iHeight + XY.x] = transpose_shared_data[GTid.x * TRANSPOSE_BLOCK_SIZE + GTid.y];

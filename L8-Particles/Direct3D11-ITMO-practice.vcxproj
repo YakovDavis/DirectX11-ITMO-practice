@@ -804,7 +804,6 @@
     </ClCompile>
     <ClCompile Include="KatamariGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
-    <None Include="Shaders\ComputeShaderSort11.hlsl" />
     <None Include="Shaders\ParticlesSim.hlsl" />
     <None Include="Shaders\Particles.hlsl" />
     <None Include="Shaders\LightPassVolume.hlsl" />
@@ -863,6 +862,9 @@
   <ItemGroup>
     <FxCompile Include="Shaders\ParticlesTex.hlsl">
       <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\SortShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>

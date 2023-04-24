@@ -10,6 +10,12 @@ struct Particle
     float MaxLifeTime;
 };
 
+struct ParticleDepths
+{
+    uint Index;
+    float Depth;
+};
+
 cbuffer CB1 : register(b0)
 {
     float4x4 gWorld;
@@ -21,6 +27,7 @@ cbuffer CB1 : register(b0)
 StructuredBuffer<Particle> renderBufSrc : register(t0);
 ConsumeStructuredBuffer<Particle> particlesBufSrc : register(u0);
 AppendStructuredBuffer<Particle> particlesBufDst : register(u1);
+RWStructuredBuffer<ParticleDepths> sortedBufSrc : register(u2);
 
 #define BLOCK_SIZE 256
 #define THREAD_IN_GROUP_TOTAL 256
@@ -64,6 +71,12 @@ void CSMain(
             p.Position.y = gDeltaTimeMaxParticlesGroupdim.w;
             p.Velocity.y = 0;
         }
+
+        sortedBufSrc[id].Index = id;
+        float4 tmpDepth = mul(float4(p.Position.xyz, 1.0f), gWorld);
+        tmpDepth = mul(tmpDepth, gView);
+        sortedBufSrc[id].Depth = tmpDepth.z;
+
         particlesBufDst.Append(p);
     }
 #endif

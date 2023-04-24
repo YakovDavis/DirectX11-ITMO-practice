@@ -205,7 +205,6 @@
     <None Include="Davork\SimpleMath.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Shaders\ComputeShaderSort11.hlsl" />
     <None Include="Shaders\ParticlesSim.hlsl" />
     <None Include="Shaders\Particles.hlsl" />
     <None Include="Shaders\LightPassVolume.hlsl" />
@@ -216,5 +215,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ParticlesTex.hlsl" />
+    <FxCompile Include="Shaders\SortShader.hlsl" />
   </ItemGroup>
 </Project>
