@@ -5,11 +5,14 @@
 
 class KatamariFurnitureComponent;
 class KatamariBall;
+class ParticleSystem;
 
 class KatamariGame : public Game
 {
 protected:
     KatamariBall* ball;
+    ParticleSystem* cloudPartSys;
+    ParticleSystem* rainPartSys;
     OrbitCameraController* orbitCameraController{};
 public:
     std::vector<KatamariFurnitureComponent*> furniture {};

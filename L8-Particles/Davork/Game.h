@@ -80,6 +80,7 @@ protected:
 	float totalTime_{};
 	float deltaTime_{};
 	std::vector<GameComponent*> components_{};
+	std::vector<GameComponent*> transparentComponents_{};
 	std::shared_ptr<DisplayWin32> display_;
 	std::shared_ptr<InputDevice> inputDevice_;
 	std::shared_ptr<Camera> camera_;
@@ -102,6 +103,8 @@ public:
 	InputDevice* GetInputDevice() const;
 	Camera* GetCamera() const;
 	DisplayWin32* GetDisplay() const;
+	ID3D11RenderTargetView** GetMainRTV();
+	ID3D11DepthStencilView* GetMainDSV();
 	float DeltaTime() const { return deltaTime_; }
 	
 };

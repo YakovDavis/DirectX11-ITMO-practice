@@ -48,9 +48,6 @@
     <ClCompile Include="Davork\OrbitCameraController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Davork\Vertex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Davork\Delegates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,6 +82,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameComponents\KatamariFurnitureComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Davork\DirectionalLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Davork\GameComponents\LightVolumeComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Davork\GameComponents\ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Davork\GBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,10 +182,39 @@
     <ClInclude Include="GameComponents\KatamariFurnitureComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Davork\DirectionalLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Davork\GameComponents\LightVolumeComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Davork\GameComponents\ParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Davork\GBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Davork\magic_enum.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Davork\PerSceneCb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Davork\SimpleMath.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="Shaders\ComputeShaderSort11.hlsl" />
+    <None Include="Shaders\ParticlesSim.hlsl" />
+    <None Include="Shaders\Particles.hlsl" />
+    <None Include="Shaders\LightPassVolume.hlsl" />
+    <None Include="Shaders\LightPass.hlsl" />
+    <None Include="Shaders\GBuffer.hlsl" />
+    <None Include="Shaders\Base3d.hlsl" />
+    <None Include="Shaders\Csm.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\ParticlesTex.hlsl" />
   </ItemGroup>
 </Project>

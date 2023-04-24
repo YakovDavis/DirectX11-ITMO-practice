@@ -203,6 +203,10 @@ Game::~Game()  // NOLINT(modernize-use-equals-default)
 	{
 		c->~GameComponent();
 	}
+	for (const auto c : transparentComponents_)
+	{
+		c->~GameComponent();
+	}
 	lightVolumeComponent_->~LightVolumeComponent();
 }
 
@@ -325,9 +329,23 @@ DisplayWin32* Game::GetDisplay() const
 	return display_.get();
 }
 
+ID3D11RenderTargetView** Game::GetMainRTV()
+{
+	return renderView_.GetAddressOf();
+}
+
+ID3D11DepthStencilView* Game::GetMainDSV()
+{
+	return depthStencilView_.Get();
+}
+
 void Game::DestroyResources()
 {
 	for (const auto c : components_)
+	{
+		c->DestroyResources();
+	}
+	for (const auto c : transparentComponents_)
 	{
 		c->DestroyResources();
 	}
@@ -435,6 +453,11 @@ void Game::Draw()
 	lightVolumeComponent_->SetPosition(Vector3(-3, 1, -3));
 	lightVolumeComponent_->Update();
 	lightVolumeComponent_->Draw();
+
+	for (const auto c : transparentComponents_)
+	{
+		c->Draw();
+	}
 }
 
 void Game::EndFrame()
@@ -450,6 +473,11 @@ void Game::Initialize()
 	{
 		c->Initialize();
 	}
+
+	for (const auto c : transparentComponents_)
+	{
+		c->Initialize();
+	}
 }
 
 void Game::PrepareFrame()
@@ -461,6 +489,11 @@ void Game::PrepareFrame()
 	context_->ClearDepthStencilView(depthShadowDsv_.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	for (const auto c : components_)
+	{
+		c->PrepareFrame();
+	}
+
+	for (const auto c : transparentComponents_)
 	{
 		c->PrepareFrame();
 	}
@@ -620,6 +653,11 @@ void Game::Update()
 	
 	camera_->UpdateMatrix();
 	for (const auto c : components_)
+	{
+		c->Update();
+	}
+
+	for (const auto c : transparentComponents_)
 	{
 		c->Update();
 	}

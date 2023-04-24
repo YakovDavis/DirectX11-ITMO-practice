@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -281,6 +282,7 @@
     <ClCompile Include="Davork\GameComponents\GridComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\LightVolumeComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\MeshRenderComponent.cpp" />
+    <ClCompile Include="Davork\GameComponents\ParticleSystem.cpp" />
     <ClCompile Include="Davork\GameComponents\QuadComponent.cpp" />
     <ClCompile Include="Davork\GameComponents\SphereComponent.cpp" />
     <ClCompile Include="Davork\GBuffer.cpp" />
@@ -802,6 +804,9 @@
     </ClCompile>
     <ClCompile Include="KatamariGame.cpp" />
     <ClCompile Include="MySuper3DApp.cpp" />
+    <None Include="Shaders\ComputeShaderSort11.hlsl" />
+    <None Include="Shaders\ParticlesSim.hlsl" />
+    <None Include="Shaders\Particles.hlsl" />
     <None Include="Shaders\LightPassVolume.hlsl" />
     <None Include="Shaders\LightPass.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -829,10 +834,12 @@
     <ClInclude Include="Davork\GameComponents\GridComponent.h" />
     <ClInclude Include="Davork\GameComponents\LightVolumeComponent.h" />
     <ClInclude Include="Davork\GameComponents\MeshRenderComponent.h" />
+    <ClInclude Include="Davork\GameComponents\ParticleSystem.h" />
     <ClInclude Include="Davork\GameComponents\QuadComponent.h" />
     <ClInclude Include="Davork\GameComponents\SphereComponent.h" />
     <ClInclude Include="Davork\GBuffer.h" />
     <ClInclude Include="Davork\LoaderHelpers.h" />
+    <ClInclude Include="Davork\magic_enum.hpp" />
     <ClInclude Include="Davork\OrbitCameraController.h" />
     <ClInclude Include="Davork\PerSceneCb.h" />
     <ClInclude Include="Davork\ResourceFactory.h" />
@@ -852,6 +859,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Davork\SimpleMath.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\ParticlesTex.hlsl">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
