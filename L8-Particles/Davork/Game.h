@@ -34,7 +34,7 @@ public:
 	};
 	
 	void CreateBackBuffer();
-	void CreateDepthStencilBuffer();
+	void CreateDepthStencilBuffer(DXGI_FORMAT depthformat);
 	void CreateCsmDepthTextureArray();
 	void InitTimer();
 	void UpdateTimer();
@@ -67,6 +67,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexArr_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthShadowDsv_;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthShadowSrv_;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthSrv_;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> depthSamplerState_;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> blendState_;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> perSceneCBuffer_;
@@ -105,6 +106,8 @@ public:
 	DisplayWin32* GetDisplay() const;
 	ID3D11RenderTargetView** GetMainRTV();
 	ID3D11DepthStencilView* GetMainDSV();
+	ID3D11ShaderResourceView** GetDepthSRV();
+	ID3D11ShaderResourceView** GetNormalBuffer();
 	float DeltaTime() const { return deltaTime_; }
 	
 };

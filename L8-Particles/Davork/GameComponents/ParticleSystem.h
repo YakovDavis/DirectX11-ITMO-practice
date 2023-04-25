@@ -80,6 +80,8 @@ public:
         DirectX::SimpleMath::Matrix View;
         DirectX::SimpleMath::Matrix Proj;
         DirectX::SimpleMath::Vector4 DeltaTimeMaxParticlesGroupdimGround;
+        DirectX::SimpleMath::Matrix InvView;
+        DirectX::SimpleMath::Vector4 BoundingSphereInfo;
     };
 #pragma pack(pop)
 
@@ -113,6 +115,7 @@ public:
         float Size1;
         float LifeTime;
         bool NudgeLifeTime;
+        DirectX::SimpleMath::Vector3 Offset;
     };
 
     Microsoft::WRL::ComPtr<ID3D11Buffer> bufArgs;

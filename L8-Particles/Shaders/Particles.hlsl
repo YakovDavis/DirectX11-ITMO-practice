@@ -29,6 +29,8 @@ cbuffer CB1 : register(b0)
     float4x4 gView;
     float4x4 gProj;
     float4 gDeltaTimeMaxParticlesGroupdim;
+    float4x4 gInvProj;
+    float4 BoundingSphereInfo;
 };
 
 StructuredBuffer<Particle> renderBufSrc : register(t0);

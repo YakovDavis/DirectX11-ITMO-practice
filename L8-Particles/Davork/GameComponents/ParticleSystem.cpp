@@ -69,6 +69,7 @@ ParticleSystem::ParticleSystem(Game* g) : GameComponent(g)
     EmitterSettings.Size1 = 0.02f;
     EmitterSettings.LifeTime = 1.0f;
     EmitterSettings.NudgeLifeTime = false;
+    EmitterSettings.Offset = Vector3::Zero;
 
     TextureFileName = L"Textures/smoke.dds";
 
@@ -140,7 +141,7 @@ void ParticleSystem::Update()
 	    {
             Particle p = {};
             p.LifeTime = EmitterSettings.LifeTime + (EmitterSettings.NudgeLifeTime ? RandomFloatInRange(-0.5f, 0.5f) : 0.0f);
-            p.Velocity = Vector4(EmitterSettings.Velocity.x, EmitterSettings.Velocity.y, EmitterSettings.Velocity.z, 0.0f) + (EmitterSettings.NudgeVelocity ? RandomVectorInRange(Vector3(0.05f, 0.05f, 0.05f)) : Vector4::Zero);
+            p.Velocity = Vector4(EmitterSettings.Velocity.x, EmitterSettings.Velocity.y, EmitterSettings.Velocity.z, 0.0f) + (EmitterSettings.NudgeVelocity ? RandomVectorInRange(Vector3(0.2f, 0.2f, 0.2f)) : Vector4::Zero);
             p.Color0 = (EmitterSettings.Color0 + (EmitterSettings.NudgeColorHue ? RandomVectorInRange(Vector3(0.05f, 0.05f, 0.05f)) : Vector4::Zero)) * (EmitterSettings.NudgeColorLum ? RandomFloatInRange(0.9f, 1.1f) : 1.0f);
             p.Size0Size1 = Vector2(EmitterSettings.Size0, EmitterSettings.Size1);
             p.Position = Vector4(Length * RandomFloatInRange(-1.0f, 1.0f), Height * RandomFloatInRange(-1.0f, 1.0f), Width * RandomFloatInRange(-1.0f, 1.0f), 0.0f);
@@ -149,6 +150,9 @@ void ParticleSystem::Update()
             p.Position.y *= RandomFloatInRange(0.0, Height / 2.0f);
             p.Position.z *= RandomFloatInRange(0.0, Length / 2.0f);
             p.Position.w = 1.0f;
+            p.Position.x += EmitterSettings.Offset.x;
+            p.Position.y += EmitterSettings.Offset.y;
+            p.Position.z += EmitterSettings.Offset.z;
             p.MaxLifeTime = p.LifeTime;
             AddParticle(p);
             emitterTimeSave -= 1.0f / EmitterSettings.ParticlesPerSecond;
@@ -162,6 +166,9 @@ void ParticleSystem::Update()
     constData.View = game->GetCamera()->GetView();
     constData.Proj = game->GetCamera()->GetProj();
     constData.DeltaTimeMaxParticlesGroupdimGround = Vector4(game->DeltaTime(), ParticlesCount, groupSizeY, GroundLevel);
+    constData.InvView = game->GetCamera()->GetView().Invert();
+    constData.BoundingSphereInfo = Vector4(EmitterSettings.Offset) + Vector4(0.0f, -5.0f, 0.0f, 0.0f);
+    constData.BoundingSphereInfo.w = 1.0f;
 
     game->GetContext()->UpdateSubresource(constBuf.Get(), 0, nullptr, &constData, 0, 0);
     game->GetContext()->CSSetConstantBuffers(0, 1, constBuf.GetAddressOf());
@@ -171,6 +178,10 @@ void ParticleSystem::Update()
 
     game->GetContext()->CSSetUnorderedAccessViews(0, 1, uavSrc.GetAddressOf(), &counterKeepValue);
     game->GetContext()->CSSetUnorderedAccessViews(1, 1, uavDst.GetAddressOf(), &counterZero);
+    game->GetContext()->CSSetUnorderedAccessViews(2, 1, uavSort.GetAddressOf(), nullptr);
+
+    game->GetContext()->CSSetShaderResources(1, 1, game->GetDepthSRV());
+    game->GetContext()->CSSetShaderResources(2, 1, game->GetNormalBuffer());
 
     if (GravityAffected)
     {
@@ -180,6 +191,8 @@ void ParticleSystem::Update()
     {
         game->GetContext()->CSSetShader(ComputeShaders[ComputeFlags::SIMULATION].Get(), nullptr, 0);
     }
+
+    game->GetContext()->CSSetSamplers(0, 1, samplerState.GetAddressOf());
 
     if (groupSizeX > 0)
     {
@@ -209,6 +222,7 @@ void ParticleSystem::Update()
     ID3D11UnorderedAccessView* nuPtr = nullptr;
     game->GetContext()->CSSetUnorderedAccessViews(0, 1, &nuPtr, &counterZero);
     game->GetContext()->CSSetUnorderedAccessViews(1, 1, &nuPtr, &counterZero);
+    game->GetContext()->CSSetUnorderedAccessViews(2, 1, &nuPtr, nullptr);
 
     game->GetContext()->CopyStructureCount(countBuf.Get(), 0, uavDst.Get());
 
@@ -280,6 +294,9 @@ void ParticleSystem::Draw()
     game->GetContext()->RSSetState(oldRastState.Get());
     game->GetContext()->OMSetBlendState(oldBlendState.Get(), oldBlendFactor, oldBlendMask);
     game->GetContext()->OMSetDepthStencilState(oldDepthState.Get(), oldStencilRef);
+
+    ID3D11ShaderResourceView* pViewnullptr = nullptr;
+    game->GetContext()->VSSetShaderResources(1, 1, &pViewnullptr);
 }
 
 void ParticleSystem::DestroyResources()
@@ -596,7 +613,7 @@ void ParticleSystem::Sort()
         SetConstants(level, level, MATRIX_HEIGHT, MATRIX_WIDTH);
 
         // Sort the row data
-        game->GetContext()->CSSetUnorderedAccessViews(0, 1, &uavSort, nullptr);
+        game->GetContext()->CSSetUnorderedAccessViews(0, 1, uavSort.GetAddressOf(), nullptr);
         game->GetContext()->CSSetShader(SortShader.Get(), nullptr, 0);
         game->GetContext()->Dispatch(MaxParticlesCount / BITONIC_BLOCK_SIZE, 1, 1);
     }
@@ -608,9 +625,7 @@ void ParticleSystem::Sort()
         SetConstants((level / BITONIC_BLOCK_SIZE), (level & ~MaxParticlesCount) / BITONIC_BLOCK_SIZE, MATRIX_WIDTH, MATRIX_HEIGHT);
 
         // Transpose the data from buffer 1 into buffer 2
-        ID3D11ShaderResourceView* pViewnullptr = nullptr;
-        game->GetContext()->CSSetShaderResources(0, 1, &pViewnullptr);
-        game->GetContext()->CSSetUnorderedAccessViews(0, 1, &uavSort, nullptr);
+        game->GetContext()->CSSetUnorderedAccessViews(0, 1, uavSort.GetAddressOf(), nullptr);
         game->GetContext()->CSSetShader(TransposeShader.Get(), nullptr, 0);
         game->GetContext()->Dispatch(MATRIX_WIDTH / TRANSPOSE_BLOCK_SIZE, MATRIX_HEIGHT / TRANSPOSE_BLOCK_SIZE, 1);
 
@@ -621,13 +636,15 @@ void ParticleSystem::Sort()
         SetConstants(BITONIC_BLOCK_SIZE, level, MATRIX_HEIGHT, MATRIX_WIDTH);
 
         // Transpose the data from buffer 2 back into buffer 1
-        game->GetContext()->CSSetShaderResources(0, 1, &pViewnullptr);
-        game->GetContext()->CSSetUnorderedAccessViews(0, 1, &uavSort, nullptr);
+        game->GetContext()->CSSetUnorderedAccessViews(0, 1, uavSort.GetAddressOf(), nullptr);
         game->GetContext()->CSSetShader(TransposeShader.Get(), nullptr, 0);
         game->GetContext()->Dispatch(MATRIX_HEIGHT / TRANSPOSE_BLOCK_SIZE, MATRIX_WIDTH / TRANSPOSE_BLOCK_SIZE, 1);
 
         // Sort the row data
         game->GetContext()->CSSetShader(SortShader.Get(), nullptr, 0);
         game->GetContext()->Dispatch(MaxParticlesCount / BITONIC_BLOCK_SIZE, 1, 1);
+
+        ID3D11UnorderedAccessView* pViewnullptr = nullptr;
+        game->GetContext()->CSSetUnorderedAccessViews(0, 1, &pViewnullptr, nullptr);
     }
 }

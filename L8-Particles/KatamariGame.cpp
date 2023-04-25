@@ -71,7 +71,7 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     cloudPartSys->Width = 5.0f;
     cloudPartSys->Length = 5.0f;
     cloudPartSys->Height = 1.5f;
-    cloudPartSys->Position = Vector3(0, 4, 0);
+    cloudPartSys->Position = Vector3(0, 6, 0);
     cloudPartSys->EmitterSettings.Size0 = 1.5f;
     cloudPartSys->EmitterSettings.Size1 = 0.8f;
     cloudPartSys->GravityAffected = false;
@@ -82,25 +82,25 @@ KatamariGame::KatamariGame() : Game(L"Katamari Game", 800, 800)
     cloudPartSys->EmitterSettings.NudgeColorLum = true;
     cloudPartSys->EmitterSettings.NudgeColorHue = false;
     cloudPartSys->EmitterSettings.NudgeVelocity = true;
-    cloudPartSys->GroundLevel = -4;
+    cloudPartSys->GroundLevel = -6;
     cloudPartSys->IsTextured = true;
     transparentComponents_.push_back(cloudPartSys);
 
     rainPartSys = new ParticleSystem(this);
     rainPartSys->Width = 4.5f;
     rainPartSys->Length = 4.5f;
-    rainPartSys->Position = Vector3(0, 4, 0);
+    rainPartSys->Position = Vector3(0, 6, 0);
     rainPartSys->EmitterSettings.Size0 = 0.08f;
     rainPartSys->EmitterSettings.Size1 = 0.08f;
     rainPartSys->GravityAffected = true;
-    rainPartSys->EmitterSettings.LifeTime = 1.0f;
+    rainPartSys->EmitterSettings.LifeTime = 4.0f;
     rainPartSys->EmitterSettings.NudgeLifeTime = false;
-    rainPartSys->EmitterSettings.ParticlesPerSecond = 500;
+    rainPartSys->EmitterSettings.ParticlesPerSecond = 1024;
     rainPartSys->EmitterSettings.Color0 = Vector4(0.0f, 0.0f, 0.8f, 1.0f);
     rainPartSys->EmitterSettings.NudgeColorLum = true;
     rainPartSys->EmitterSettings.NudgeColorHue = true;
     rainPartSys->EmitterSettings.NudgeVelocity = true;
-    rainPartSys->GroundLevel = -4;
+    rainPartSys->GroundLevel = -6;
     transparentComponents_.push_back(rainPartSys);
 
     /*GridComponent* grid = new GridComponent(this, 1.0f, 100);
@@ -131,7 +131,7 @@ void KatamariGame::Update()
         dir +=(orbitCameraController->GetForward()).Cross(orbitCameraController->GetUp());
     if (dir.Length() > 0.0f)
         ball->SetDirection(dir);
-    cloudPartSys->Position = ball->GetPosition() + Vector3(0, 3, 0);
-    rainPartSys->Position = ball->GetPosition() + Vector3(0, 3, 0);
+    cloudPartSys->Position = ball->GetPosition() + Vector3(0, 5, 0);
+    rainPartSys->EmitterSettings.Offset = ball->GetPosition() + Vector3(0, -1, 0);
     Game::Update();
 }
